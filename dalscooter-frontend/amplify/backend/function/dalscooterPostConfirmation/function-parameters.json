@@ -1,0 +1,20 @@
+{
+  "trigger": true,
+  "modules": [
+    "add-to-group"
+  ],
+  "parentResource": "dalscooter",
+  "functionName": "dalscooterPostConfirmation",
+  "resourceName": "dalscooterPostConfirmation",
+  "parentStack": "auth",
+  "triggerEnvs": "[]",
+  "triggerDir": "/snapshot/amplify-cli/build/node_modules/@aws-amplify/amplify-category-auth/provider-utils/awscloudformation/triggers/PostConfirmation",
+  "triggerTemplate": "PostConfirmation.json.ejs",
+  "triggerEventPath": "PostConfirmation.event.json",
+  "roleName": "dalscooterPostConfirmation",
+  "skipEdit": true,
+  "UserPoolId": {
+    "type": "String",
+    "description": "Cognito User Pool ID"
+  }
+}

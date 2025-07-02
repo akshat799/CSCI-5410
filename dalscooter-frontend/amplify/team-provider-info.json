@@ -1,0 +1,48 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-dalscooter-dev-90e4f-authRole",
+      "UnauthRoleArn": "arn:aws:iam::370161336954:role/amplify-dalscooter-dev-90e4f-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::370161336954:role/amplify-dalscooter-dev-90e4f-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+      "UnauthRoleName": "amplify-dalscooter-dev-90e4f-unauthRole",
+      "StackName": "amplify-dalscooter-dev-90e4f",
+      "StackId": "arn:aws:cloudformation:us-east-1:370161336954:stack/amplify-dalscooter-dev-90e4f/1d28be60-56ee-11f0-80e2-12b086a52fd5",
+      "AmplifyAppId": "d18zjcqe1kwq78",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-dalscooter-dev-90e4f-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+    },
+    "categories": {
+      "auth": {
+        "dalscooter": {},
+        "userPoolGroups": {}
+      },
+      "function": {
+        "dalscooterCreateAuthChallenge": {
+          "deploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+          "s3Key": "amplify-builds/dalscooterCreateAuthChallenge-796233576c3875563242-build.zip"
+        },
+        "dalscooterDefineAuthChallenge": {
+          "deploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+          "s3Key": "amplify-builds/dalscooterDefineAuthChallenge-46305a4a7a4f31693054-build.zip"
+        },
+        "dalscooterPostConfirmation": {
+          "GROUP": "RegisteredCustomers",
+          "deploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+          "s3Key": "amplify-builds/dalscooterPostConfirmation-4c57753165683664624f-build.zip"
+        },
+        "dalscooterVerifyAuthChallengeResponse": {
+          "deploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+          "s3Key": "amplify-builds/dalscooterVerifyAuthChallengeResponse-766f69626b7677546745-build.zip"
+        },
+        "AdminQueries0b353f1e": {
+          "deploymentBucketName": "amplify-dalscooter-dev-90e4f-deployment",
+          "s3Key": "amplify-builds/AdminQueries0b353f1e-56574350447836772b4e-build.zip"
+        }
+      },
+      "api": {
+        "AdminQueries": {}
+      }
+    }
+  }
+}

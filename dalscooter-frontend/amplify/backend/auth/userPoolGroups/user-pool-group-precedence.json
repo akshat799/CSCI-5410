@@ -1,0 +1,14 @@
+[
+  {
+    "groupName": "FranchiseOperators",
+    "precedence": 1
+  },
+  {
+    "groupName": "RegisteredCustomers",
+    "precedence": 2
+  },
+  {
+    "groupName": "Guests",
+    "precedence": 3
+  }
+]

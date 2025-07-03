@@ -1,7 +1,0 @@
-[
-  {
-    "Effect": "Allow",
-    "Action": ["cognito-idp:AdminAddUserToGroup"],
-    "Resource": ["*"]
-  }
-]

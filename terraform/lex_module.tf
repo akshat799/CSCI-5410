@@ -1,16 +1,29 @@
-###############################
-# main.tf
-###############################
+#################################
+# MODULE 2 - Virtual Assistant
+# Fully updated: Python Lambdas + DynamoDB + Lex
+#################################
 
-#--------------------------------
-# 1. Provider & Variables
-#--------------------------------
+# -------------------------------
+# 1. Local lambda sources + auto zip
+# -------------------------------
+locals {
+  lambdas = {
+    register_help = "${path.module}/../lambda-functions/register_help.py"
+    find_booking  = "${path.module}/../lambda-functions/find_booking.py"
+    submit_concern = "${path.module}/../lambda-functions/submit_concern.py"
+  }
+}
 
-#--------------------------------
+data "archive_file" "lambda_zips" {
+  for_each    = local.lambdas
+  type        = "zip"
+  source_file = each.value
+  output_path = "${path.module}/${each.key}.zip"
+}
+
+# -------------------------------
 # 2. DynamoDB Tables
-#--------------------------------
-
-# Booking lookup table
+# -------------------------------
 resource "aws_dynamodb_table" "bookings" {
   name           = "Bookings"
   billing_mode   = "PAY_PER_REQUEST"
@@ -32,7 +45,6 @@ resource "aws_dynamodb_table" "bookings" {
   }
 }
 
-# Concerns table
 resource "aws_dynamodb_table" "concerns" {
   name           = "Concerns"
   billing_mode   = "PAY_PER_REQUEST"
@@ -49,9 +61,9 @@ resource "aws_dynamodb_table" "concerns" {
   }
 }
 
-#--------------------------------
+# -------------------------------
 # 3. IAM Role for Lambdas
-#--------------------------------
+# -------------------------------
 resource "aws_iam_role" "lambda_exec" {
   name               = "lambda_exec_role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
@@ -67,7 +79,6 @@ data "aws_iam_policy_document" "lambda_assume" {
   }
 }
 
-# Attach DynamoDB read/write and CloudWatch Logs
 resource "aws_iam_role_policy" "lambda_policy" {
   name   = "lambda_dynamodb_policy"
   role   = aws_iam_role.lambda_exec.id
@@ -96,100 +107,61 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 }
 
-#--------------------------------
-# 4. Lambda Functions
-#--------------------------------
-# 4.1 RegisterHelp (static responses)
-resource "aws_lambda_function" "register_help" {
-  filename         = "./dist/register_help.zip"  # prepared zip
-  function_name    = "RegisterHelpLambda"
-  handler          = "index.handler"
-  runtime          = "nodejs18.x"
-  role             = aws_iam_role.lambda_exec.arn
-  source_code_hash = filebase64sha256("./dist/register_help.zip")
-}
+# -------------------------------
+# 4. Lambda Functions (Python)
+# -------------------------------
+resource "aws_lambda_function" "lambda" {
+  for_each = data.archive_file.lambda_zips
 
-# 4.2 FindBooking
-resource "aws_lambda_function" "find_booking" {
-  filename         = "./dist/find_booking.zip"
-  function_name    = "FindBookingLambda"
-  handler          = "index.handler"
-  runtime          = "nodejs18.x"
+  function_name    = "${each.key}_lambda"
+  filename         = each.value.output_path
+  source_code_hash = each.value.output_base64sha256
+  handler          = "${each.key}.lambda_handler"
+  runtime          = "python3.12"
   role             = aws_iam_role.lambda_exec.arn
-  source_code_hash = filebase64sha256("./dist/find_booking.zip")
+
   environment {
     variables = {
       BOOKINGS_TABLE = aws_dynamodb_table.bookings.name
-    }
-  }
-}
-
-# 4.3 SubmitConcern
-resource "aws_lambda_function" "submit_concern" {
-  filename         = "./dist/submit_concern.zip"
-  function_name    = "SubmitConcernLambda"
-  handler          = "index.handler"
-  runtime          = "nodejs18.x"
-  role             = aws_iam_role.lambda_exec.arn
-  source_code_hash = filebase64sha256("./dist/submit_concern.zip")
-  environment {
-    variables = {
       CONCERNS_TABLE = aws_dynamodb_table.concerns.name
     }
   }
 }
 
-# Allow Lex to invoke Lambdas
-resource "aws_lambda_permission" "lex_invoke_register" {
-  statement_id  = "AllowLexInvokeRegister"
+# -------------------------------
+# Lambda permissions for Lex
+# -------------------------------
+resource "aws_lambda_permission" "lex_invoke" {
+  for_each = aws_lambda_function.lambda
+  statement_id  = "AllowLexInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.register_help.function_name
-  principal     = "lex.amazonaws.com"
-}
-resource "aws_lambda_permission" "lex_invoke_find" {
-  statement_id  = "AllowLexInvokeFind"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.find_booking.function_name
-  principal     = "lex.amazonaws.com"
-}
-resource "aws_lambda_permission" "lex_invoke_concern" {
-  statement_id  = "AllowLexInvokeConcern"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.submit_concern.function_name
+  function_name = each.value.function_name
   principal     = "lex.amazonaws.com"
 }
 
-#--------------------------------
+# -------------------------------
 # 5. Lex Bot & Intents
-#--------------------------------
-# 5.1 Slot Type for bookingReference
+# -------------------------------
 resource "aws_lex_slot_type" "booking_ref_type" {
-  name        = "BookingReferenceType"
-  enumeration_value {
-    value = ""  # optional static enumerations
-  }
-  value_selection_strategy = "ORIGINAL_VALUE"
+  name                      = "BookingReferenceType"
+  value_selection_strategy  = "ORIGINAL_VALUE"
 }
 
-# 5.2 Intent: RegisterHelp
 resource "aws_lex_intent" "register_help_intent" {
-  name                = "RegisterHelpIntent"
-  sample_utterances   = [
-    "How do I register?",
-    "What is the signup process?",
-    "Help me sign up"
-  ]
+  name              = "RegisterHelpIntent"
+  sample_utterances = ["How do I register?", "What is the signup process?", "Help me sign up"]
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri = aws_lambda_function.register_help.invoke_arn
+      uri             = aws_lambda_function.lambda["register_help"].invoke_arn
       message_version = "1.0"
     }
   }
-  conclusion_statement { messages { content = "Thanks for asking!" content_type = "PlainText" } }
+  conclusion_statement {
+    messages { content = "Thanks for asking!" content_type = "PlainText" }
+  }
 }
 
-# 5.3 Intent: FindBooking
 resource "aws_lex_intent" "find_booking_intent" {
   name              = "FindBookingIntent"
   sample_utterances = [
@@ -198,9 +170,9 @@ resource "aws_lex_intent" "find_booking_intent" {
     "My booking reference is {bookingReference}"
   ]
   slots {
-    name = "bookingReference"
-    slot_type = aws_lex_slot_type.booking_ref_type.name
-    slot_constraint = "Required"
+    name                 = "bookingReference"
+    slot_type             = aws_lex_slot_type.booking_ref_type.name
+    slot_constraint       = "Required"
     value_elicitation_prompt {
       max_attempts = 2
       messages { content = "Please tell me your booking reference code." content_type = "PlainText" }
@@ -209,14 +181,15 @@ resource "aws_lex_intent" "find_booking_intent" {
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri = aws_lambda_function.find_booking.invoke_arn
-n      message_version = "1.0"
+      uri             = aws_lambda_function.lambda["find_booking"].invoke_arn
+      message_version = "1.0"
     }
   }
-  conclusion_statement { messages { content = "Hope that helps!" content_type = "PlainText" } }
+  conclusion_statement {
+    messages { content = "Hope that helps!" content_type = "PlainText" }
+  }
 }
 
-# 5.4 Intent: SubmitConcern
 resource "aws_lex_intent" "submit_concern_intent" {
   name              = "SubmitConcernIntent"
   sample_utterances = [
@@ -225,9 +198,9 @@ resource "aws_lex_intent" "submit_concern_intent" {
     "Send concern for booking {bookingReference}"
   ]
   slots {
-    name = "bookingReference"
-    slot_type = aws_lex_slot_type.booking_ref_type.name
-    slot_constraint = "Required"
+    name                 = "bookingReference"
+    slot_type             = aws_lex_slot_type.booking_ref_type.name
+    slot_constraint       = "Required"
     value_elicitation_prompt {
       max_attempts = 2
       messages { content = "What's your booking reference?" content_type = "PlainText" }
@@ -236,14 +209,15 @@ resource "aws_lex_intent" "submit_concern_intent" {
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri = aws_lambda_function.submit_concern.invoke_arn
+      uri             = aws_lambda_function.lambda["submit_concern"].invoke_arn
       message_version = "1.0"
     }
   }
-  conclusion_statement { messages { content = "Your concern has been submitted to our support team." content_type = "PlainText" } }
+  conclusion_statement {
+    messages { content = "Your concern has been submitted to our support team." content_type = "PlainText" }
+  }
 }
 
-# 5.5 Lex Bot
 resource "aws_lex_bot" "dalscooter_bot" {
   name                 = "DALScooterBot"
   locale               = "en_US"
@@ -272,9 +246,7 @@ resource "aws_lex_bot" "dalscooter_bot" {
 }
 
 resource "aws_lex_bot_alias" "prod_alias" {
-  name       = "Prod"
-  bot_name   = aws_lex_bot.dalscooter_bot.name
+  name        = "Prod"
+  bot_name    = aws_lex_bot.dalscooter_bot.name
   bot_version = "$LATEST"
 }
-
-

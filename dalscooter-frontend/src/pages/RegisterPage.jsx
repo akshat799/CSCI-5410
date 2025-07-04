@@ -12,7 +12,34 @@ function RegisterPage() {
 
   const handleSubmit = e => {
     e.preventDefault();
-    // TODO: Registration logic
+
+    const { name, email, password, question, answer } = form;
+
+    if (!name || name.trim().length < 2) {
+        alert('Please enter a valid full name.');
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!email || !emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    if (!password || password.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+    }
+
+    if (!question || question === '') {
+        alert('Please select a security question.');
+        return;
+    }
+
+    if (!answer || answer.trim().length < 2) {
+        alert('Please provide a valid answer to the security question.');
+        return;
+    }
     navigate('/login');
   };
 

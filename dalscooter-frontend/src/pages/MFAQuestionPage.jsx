@@ -7,7 +7,13 @@ function MFAQuestionPage() {
   const handleSubmit = e => {
     e.preventDefault();
     // TODO: Verify answer
-    navigate('/mfa-caesar');
+
+    //mock check
+    if (e.target[0].value.trim().toLowerCase() === 'fluffy') {
+        navigate('/mfa-caesar');
+    } else {
+        alert('Incorrect answer');
+    }
   };
 
   return (
@@ -17,7 +23,7 @@ function MFAQuestionPage() {
         <h2>Step 1: Security Question</h2>
         <form onSubmit={handleSubmit}>
           <p>What is your pet’s name?</p>
-          <input placeholder="Your Answer" required />
+          <input placeholder="Your Answer (fluffy)" required />
           <button type="submit">Continue</button>
         </form>
       </div>

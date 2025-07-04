@@ -6,7 +6,15 @@ function LoginPage() {
 
   const handleLogin = e => {
     e.preventDefault();
-    // TODO: Login verification logic
+    const form = e.target;
+    const email = form.elements[0].value.trim();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email (e.g., name@example.com).');
+      return;
+    }
+
     navigate('/mfa-question');
   };
 

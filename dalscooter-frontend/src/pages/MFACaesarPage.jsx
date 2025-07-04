@@ -1,10 +1,12 @@
 import Navbar from '../components/Navbar';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function MFACaesarPage() {
   const [encrypted, setEncrypted] = useState('');
   const original = 'dal scooter';
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,9 +18,15 @@ function MFACaesarPage() {
   }, []);
 
   const handleSubmit = e => {
-    e.preventDefault();
-    // TODO: Validate Caesar input
-    navigate('/customer-home');
+    const userAnswer = e.target[0].value.trim().toLowerCase();
+
+    if (userAnswer === original) {
+      // TODO: Validate Caesar input
+      login(); 
+      navigate('/customer-home');
+    } else {
+      alert('Incorrect decryption. Try again!');
+    }
   };
 
   return (
@@ -29,7 +37,7 @@ function MFACaesarPage() {
         <p>Decrypt this:</p>
         <p><code>{encrypted}</code></p>
         <form onSubmit={handleSubmit}>
-          <input placeholder="Your decryption" required />
+          <input placeholder="Your decryption (dal scooter)" required />
           <button type="submit">Submit</button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import Navbar from '../components/Navbar';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './LoginPage.css';
 
 function RegisterPage() {
   const [form, setForm] = useState({});
@@ -46,21 +47,52 @@ function RegisterPage() {
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h2>Create an Account</h2>
-        <form onSubmit={handleSubmit}>
-          <input name="name" placeholder="Full Name" onChange={handleChange} required />
-          <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
-          <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-          <select name="question" onChange={handleChange} required>
-            <option value="">Select a security question</option>
-            <option>What is your pet’s name?</option>
-            <option>What is your mother’s maiden name?</option>
-            <option>What is your favourite color?</option>
-          </select>
-          <input name="answer" placeholder="Your Answer" onChange={handleChange} required />
-          <button type="submit">Register</button>
-        </form>
+      <div className="login-bg">
+        <div className="login-card">
+          <h2 className="login-title">Create Account</h2>
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label htmlFor="register-name">Full Name</label>
+              <div className="input-wrapper">
+                <input id="register-name" name="name" placeholder="Enter your name" onChange={handleChange} required />
+              </div>
+            </div>
+            <div className="input-group">
+              <label htmlFor="register-email">Email Address</label>
+              <div className="input-wrapper">
+                <input id="register-email" name="email" type="email" placeholder="Enter your email" onChange={handleChange} required />
+              </div>
+            </div>
+            <div className="input-group">
+              <label htmlFor="register-password">Password</label>
+              <div className="input-wrapper">
+                <input id="register-password" name="password" type="password" placeholder="Enter your password" onChange={handleChange} required />
+              </div>
+            </div>
+            <div className="input-group">
+              <label htmlFor="register-question">Security Question</label>
+              <div className="input-wrapper">
+                <select id="register-question" name="question" onChange={handleChange} required>
+                  <option value="" disabled selected>Select a security question</option>
+                  <option>What is your pet's name?</option>
+                  <option>What is your mother's maiden name?</option>
+                  <option>What is your favourite color?</option>
+                </select>
+              </div>
+            </div>
+            <div className="input-group">
+              <label htmlFor="register-answer">Your Answer</label>
+              <div className="input-wrapper">
+                <input id="register-answer" name="answer" placeholder="Your Answer" onChange={handleChange} required />
+              </div>
+            </div>
+            <button type="submit" className="submit-btn">Register</button>
+          </form>
+          <div className="login-footer">
+            <span>Already have an account? </span>
+            <a href="/login" className="signup-link">Login</a>
+          </div>
+        </div>
       </div>
     </>
   );

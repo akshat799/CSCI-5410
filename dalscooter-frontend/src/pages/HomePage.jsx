@@ -5,7 +5,7 @@ function HomePage() {
     <>
       <Navbar />
       <div className="container">
-        <h2>Welcome to <span style={{ color: '#32746D' }}>DALScooter</span></h2>
+        <h2>Welcome to <span style={{ color: '#d46338' }}>DALScooter</span></h2>
         <p>Book and ride eco-friendly scooters across campus using secure authentication.</p>
       </div>
     </>

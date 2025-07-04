@@ -31,7 +31,7 @@ function MFACaesarPage() {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar />
       <div className="container">
         <h2>Step 2: Decryption Challenge</h2>
         <p>Decrypt this:</p>
@@ -39,6 +39,21 @@ function MFACaesarPage() {
         <form onSubmit={handleSubmit}>
           <input placeholder="Your decryption (dal scooter)" required />
           <button type="submit">Submit</button>
+        </form>
+      </div>
+    </> */}
+    <Navbar />
+      <div className="container">
+        <h2 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>Step 2: Decryption Challenge</h2>
+        <p style={{ textAlign: 'center', color: 'var(--muted)', fontWeight: 500, marginBottom: '0.5rem' }}>
+          Decrypt this:
+        </p>
+        <p style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: 600, letterSpacing: '0.04em', color: 'var(--accent)', marginBottom: '1.2rem' }}>
+          <code>{encrypted}</code>
+        </p>
+        <form onSubmit={handleSubmit}>
+          <input placeholder="Your decryption (dal scooter)" required />
+          <button type="submit" >Submit</button>
         </form>
       </div>
     </>

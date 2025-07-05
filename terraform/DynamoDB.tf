@@ -1,3 +1,14 @@
+resource "aws_dynamodb_table" "users" {
+  name         = "Users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "user_id"
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+}
+
 resource "aws_dynamodb_table" "user_data" {
   name         = "UserData"
   billing_mode = "PAY_PER_REQUEST"

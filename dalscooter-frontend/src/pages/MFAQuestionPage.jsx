@@ -1,18 +1,40 @@
-import Navbar from '../components/Navbar';
+// src/pages/MFAQuestionPage.jsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 
-function MFAQuestionPage() {
+export default function MFAQuestionPage() {
   const navigate = useNavigate();
+  const { respondToChallenge, challengeParams } = useAuth();
+  const [answer, setAnswer] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = e => {
+  useEffect(() => {
+    if (!challengeParams) {
+      navigate('/login');
+    }
+  }, [challengeParams, navigate]);
+
+  const question = challengeParams?.question || '';
+
+  const handleSubmit = async e => {
     e.preventDefault();
-    // TODO: Verify answer
-
-    //mock check
-    if (e.target[0].value.trim().toLowerCase() === 'fluffy') {
+    setError('');
+    setLoading(true);
+    try {
+      const next = await respondToChallenge(answer);
+      if (next === 'CUSTOM_CHALLENGE') {
         navigate('/mfa-caesar');
-    } else {
-        alert('Incorrect answer');
+      } else {
+        navigate('/customer-home');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Incorrect answer.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -20,15 +42,21 @@ function MFAQuestionPage() {
     <>
       <Navbar />
       <div className="container">
-        <h2>Step 1: Security Question</h2>
+        <h2>Security Question</h2>
+        <p>{question}</p>
+        {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <p>What is your pet’s name?</p>
-          <input placeholder="Your Answer (fluffy)" required />
-          <button type="submit">Continue</button>
+          <input
+            placeholder="Your Answer"
+            value={answer}
+            onChange={e => setAnswer(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Verifying…' : 'Continue'}
+          </button>
         </form>
       </div>
     </>
   );
 }
-
-export default MFAQuestionPage;

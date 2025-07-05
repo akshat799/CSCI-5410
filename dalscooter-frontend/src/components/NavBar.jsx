@@ -3,21 +3,23 @@ import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 function Navbar() {
-  const { isLoggedIn, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const isLoggedIn       = Boolean(user);
+  const navigate         = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = e => {
+    e.preventDefault();
+    signOut();
     navigate('/');
   };
 
   return (
-    <div className="nav-container">
+    <nav className="nav-container">
       <div className="nav-brand">
         <Link to="/">DALScooter</Link>
       </div>
       <div className="nav-links">
-        {!isLoggedIn ? (
+        { !isLoggedIn ? (
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
@@ -25,14 +27,12 @@ function Navbar() {
         ) : (
           <>
             <Link to="/customer-home">Profile</Link>
-            <Link to="/">Logout</Link>
-            {/* <button onClick={handleLogout} style={{cursor: 'pointer' }}>
-              Logout
-            </button> */}
+            {/* use a real link or button so we can call logout */}
+            <a href="/" onClick={handleLogout}>Logout</a>
           </>
         )}
       </div>
-    </div>
+    </nav>
   );
 }
 

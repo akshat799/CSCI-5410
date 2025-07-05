@@ -1,31 +1,40 @@
-import Navbar from '../components/Navbar';
-import { useEffect, useState } from 'react';
+// src/pages/MFACaesarPage.jsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 
-function MFACaesarPage() {
-  const [encrypted, setEncrypted] = useState('');
-  const original = 'dal scooter';
-  const { login } = useAuth();
+export default function MFACaesarPage() {
   const navigate = useNavigate();
+  const { respondToChallenge, challengeParams } = useAuth();
+  const [answer, setAnswer] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const enc = original.replace(/[a-zA-Z]/g, char => {
-      const base = char <= 'Z' ? 65 : 97;
-      return String.fromCharCode(((char.charCodeAt(0) - base + 3) % 26) + base);
-    });
-    setEncrypted(enc);
-  }, []);
+    if (!challengeParams) {
+      navigate('/login');
+    }
+  }, [challengeParams, navigate]);
 
-  const handleSubmit = e => {
-    const userAnswer = e.target[0].value.trim().toLowerCase();
+  const cipher = challengeParams?.ciphertext || '';
 
-    if (userAnswer === original) {
-      // TODO: Validate Caesar input
-      login(); 
-      navigate('/customer-home');
-    } else {
-      alert('Incorrect decryption. Try again!');
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const next = await respondToChallenge(answer);
+      if (next) {
+        setError('Incorrect decryption.');
+      } else {
+        navigate('/customer-home');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Verification failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,16 +42,21 @@ function MFACaesarPage() {
     <>
       <Navbar />
       <div className="container">
-        <h2>Step 2: Decryption Challenge</h2>
-        <p>Decrypt this:</p>
-        <p><code>{encrypted}</code></p>
+        <h2>Decryption Challenge</h2>
+        <pre>{cipher}</pre>
+        {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <input placeholder="Your decryption (dal scooter)" required />
-          <button type="submit">Submit</button>
+          <input
+            placeholder="Decrypt here"
+            value={answer}
+            onChange={e => setAnswer(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Checking…' : 'Submit'}
+          </button>
         </form>
       </div>
     </>
   );
 }
-
-export default MFACaesarPage;

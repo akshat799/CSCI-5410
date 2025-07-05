@@ -11,11 +11,12 @@ def lambda_handler(event, context):
         return {"valid": False, "reason": "Missing user_id or answer"}
 
     try:
-        item = qa_table.get_item(Key={'user_id': user_id}).get('Item')
+        response = qa_table.get_item(Key={'user_id': user_id})
+        item = response.get('Item')
         if not item:
             return {"valid": False, "reason": "User not found"}
 
-        correct_answer = item.get('answer', '').strip().lower()
+        correct_answer = item.get('secAnswer', '').strip().lower()
         return {"valid": user_answer == correct_answer}
 
     except Exception as e:

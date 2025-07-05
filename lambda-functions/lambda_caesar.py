@@ -3,16 +3,6 @@ import boto3
 dynamodb = boto3.resource('dynamodb')
 caesar_table = dynamodb.Table('CaesarChallenge')
 
-def apply_caesar(cipher_text, shift):
-    result = ''
-    for char in cipher_text:
-        if char.isalpha():
-            base = ord('A') if char.isupper() else ord('a')
-            result += chr((ord(char) - base - shift) % 26 + base)
-        else:
-            result += char
-    return result
-
 def lambda_handler(event, context):
     user_id = event.get('user_id')
     answer = event.get('answer', '').strip()
@@ -21,15 +11,16 @@ def lambda_handler(event, context):
         return {"valid": False, "reason": "Missing user_id or answer"}
 
     try:
-        item = caesar_table.get_item(Key={'user_id': user_id}).get('Item')
+        response = caesar_table.get_item(Key={'user_id': user_id})
+        item = response.get('Item')
         if not item:
             return {"valid": False, "reason": "User not found"}
 
-        original_text = item.get('original_text', '')
-        shift = int(item.get('shift', 0))
-
-        decrypted = apply_caesar(answer, shift)
-        return {"valid": decrypted == original_text}
+        original_text = item.get('plainText', '')
+        
+        # The user should provide the decrypted plaintext
+        # Compare their answer directly to the original plain text
+        return {"valid": answer.lower() == original_text.lower()}
 
     except Exception as e:
         return {"valid": False, "reason": str(e)}

@@ -41,6 +41,12 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_exec" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_basic_exec_mfa" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+
 resource "aws_lambda_permission" "define_auth_permission" {
   statement_id  = "AllowCognitoDefineAuth"
   action        = "lambda:InvokeFunction"
@@ -61,6 +67,14 @@ resource "aws_lambda_permission" "verify_auth_permission" {
   statement_id  = "AllowCognitoVerifyAuth"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda["verify_auth"].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
+}
+
+resource "aws_lambda_permission" "post_confirmation_permission" {
+  statement_id  = "AllowCognitoPostConfirmation"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["post_confirmation"].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }

@@ -1,45 +1,30 @@
 import boto3
-import json
+import hashlib
+import os
 
-lambda_client = boto3.client('lambda')
+# DynamoDB tables (hard-coded names)
+dynamodb = boto3.resource('dynamodb')
+qa_table = dynamodb.Table('SecurityQA')
+caesar_table = dynamodb.Table('CaesarChallenge')
 
-def invoke_lambda(function_name, payload):
-    try:
-        response = lambda_client.invoke(
-            FunctionName=function_name,
-            InvocationType='RequestResponse',
-            Payload=json.dumps(payload)
-        )
-        result = json.loads(response['Payload'].read())
-        return result.get('valid', False)
-    except Exception as e:
-        print(f"Error invoking {function_name}: {e}")
-        return False
 
 def lambda_handler(event, context):
-    user_id = event['userName']
-    metadata = event['request'].get('challengeMetadata')
-    user_answer = event['request'].get('challengeAnswer')
+    user = event['userName']
+    answer = event['request']['challengeAnswer']
+    metadata = event['request'].get('privateChallengeParameters', {})
+    passed = False
 
-    if not user_id or not user_answer:
-        event['response']['answerCorrect'] = False
-        return event
+    if metadata.get('challenge_type') == 'QA':
+        # fetch correct answer
+        item = qa_table.get_item(Key={'user_id': user}).get('Item', {})
+        correct = item.get('secAnswer', '').strip().lower()
+        passed = (answer.strip().lower() == correct)
 
-    if metadata == 'QA':
-        result = invoke_lambda('QAValidation', {
-            'user_id': user_id,
-            'answer': user_answer
-        })
-        event['response']['answerCorrect'] = result
+    elif metadata.get('challenge_type') == 'CAESAR':
+        # expected_answer was the plaintext
+        correct = metadata.get('expected_answer', '').strip().lower()
+        passed = (answer.strip().lower() == correct)
+        print(f"Expected answer: {correct}", passed)
 
-    elif metadata == 'CAESAR':
-        result = invoke_lambda('CaesarValidation', {
-            'user_id': user_id,
-            'answer': user_answer
-        })
-        event['response']['answerCorrect'] = result
-
-    else:
-        event['response']['answerCorrect'] = False
-
+    event['response']['answerCorrect'] = passed
     return event

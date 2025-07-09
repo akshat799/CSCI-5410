@@ -30,12 +30,11 @@ export default function RegisterPage() {
       await register({
         username: form.email.toLowerCase().trim(),
         password: form.password,
-        attributes: {
-          name: form.name.trim(),
-          email: form.email.toLowerCase().trim(),
-          'custom:secQuestion': form.question,
-          'custom:secAnswer': form.answer.trim().toLowerCase()
-        }
+        name: form.name.trim(),
+        email: form.email.toLowerCase().trim(),
+        question: form.question,
+        answer: form.answer.trim().toLowerCase()
+        
       });
       navigate('/login');
     } catch (err) {

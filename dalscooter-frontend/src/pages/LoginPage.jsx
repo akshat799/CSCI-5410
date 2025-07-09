@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, challengeParams, user } = useAuth();
+  const { login, challengeParams, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,9 +29,9 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const next = await signIn({ username: email, password });
-      if (!next && !user) {
-        navigate('/customer-home');
+      const next = await login({ email, password });
+      if (next) {
+        return;
       }
     } catch (err) {
       console.error(err);

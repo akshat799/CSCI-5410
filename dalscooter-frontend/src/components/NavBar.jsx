@@ -3,13 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const isLoggedIn       = Boolean(user);
   const navigate         = useNavigate();
 
   const handleLogout = e => {
     e.preventDefault();
-    signOut();
+    logout();
     navigate('/');
   };
 

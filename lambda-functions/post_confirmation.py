@@ -2,7 +2,7 @@ import os
 import boto3
 import random
 
-# Initialize DynamoDB tables from environment variables
+
 ddb = boto3.resource('dynamodb')
 qa_table = ddb.Table('SecurityQA')
 caesar_table = ddb.Table('CaesarChallenge')

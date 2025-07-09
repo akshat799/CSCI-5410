@@ -19,7 +19,7 @@ export default function OTPPage() {
     setError('');
     setLoading(true);
     try {
-      await confirmSignUp({ username: email.toLowerCase().trim(), code });
+      await confirmSignUp({ email: email.toLowerCase().trim(), code });
       navigate('/login', { replace: true });
     } catch (err) {
       console.error(err);

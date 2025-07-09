@@ -19,6 +19,7 @@ def lambda_handler(event, context):
         item = qa_table.get_item(Key={'user_id': user}).get('Item', {})
         correct = item.get('secAnswer', '').strip().lower()
         passed = (answer.strip().lower() == correct)
+        print(f"Expected answer: {correct}", passed)
 
     elif metadata.get('challenge_type') == 'CAESAR':
         # expected_answer was the plaintext

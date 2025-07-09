@@ -8,8 +8,7 @@ def lambda_handler(event, context):
     user    = event['userName']
     session = event['request'].get('session', [])
 
-    # First CUSTOM_CHALLENGE → Security Question
-    if len(session) == 0:
+    if len(session) == 2 and session[1]['challengeName'] == "PASSWORD_VERIFIER" and session[1]['challengeResult']:
         item = qa_table.get_item(Key={'user_id': user}).get('Item', {})
         question = item.get('secQuestion', 'What is your secret?')
         answer   = item.get('secAnswer', '').strip().lower()
@@ -24,8 +23,7 @@ def lambda_handler(event, context):
         }
         event['response']['challengeMetadata'] = 'QA'
 
-    # Second CUSTOM_CHALLENGE → Caesar cipher
-    else:
+    elif len(session) == 3 and session[2]['challengeName'] == "CUSTOM_CHALLENGE" and session[1]['challengeResult']:
         item       = caesar_table.get_item(Key={'user_id': user}).get('Item', {})
         cipher     = item.get('challenge_text', '')
         plaintext  = item.get('plainText', '').strip().lower()
@@ -40,5 +38,4 @@ def lambda_handler(event, context):
         }
         event['response']['challengeMetadata'] = 'CAESAR'
 
-    # Cognito will use the DefineAuthChallenge to set challengeName
     return event

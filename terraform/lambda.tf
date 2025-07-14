@@ -3,8 +3,6 @@ locals {
     define_auth        = "${path.module}/../lambda-functions/define_auth.py"
     create_auth        = "${path.module}/../lambda-functions/create_auth.py"
     verify_auth        = "${path.module}/../lambda-functions/verify_auth.py"
-    qa_check           = "${path.module}/../lambda-functions/lambda_qa.py"
-    caesar_check       = "${path.module}/../lambda-functions/lambda_caesar.py"
     post_confirmation  = "${path.module}/../lambda-functions/post_confirmation.py"
   }
 }

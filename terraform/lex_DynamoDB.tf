@@ -7,17 +7,8 @@ resource "aws_dynamodb_table" "bookings" {
     name = "bookingReference"
     type = "S"
   }
-
-  attribute {
-    name = "accessCode"
-    type = "S"
-  }
-
-  attribute {
-    name = "duration"
-    type = "N"
-  }
 }
+
 
 resource "aws_dynamodb_table" "concerns" {
   name           = "Concerns"
@@ -33,4 +24,11 @@ resource "aws_dynamodb_table" "concerns" {
     name = "bookingReference"
     type = "S"
   }
+
+  global_secondary_index {
+    name               = "BookingReferenceIndex"
+    hash_key           = "bookingReference"
+    projection_type    = "ALL"
+  }
 }
+

@@ -7,12 +7,13 @@
 # Lambda permissions for Lex
 # -------------------------------
 resource "aws_lambda_permission" "lex_invoke" {
-  for_each = aws_lambda_function.lambda
+  for_each      = aws_lambda_function.lex_lambda
   statement_id  = "AllowLexInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = each.value.function_name
+  function_name = each.value.arn
   principal     = "lex.amazonaws.com"
 }
+
 
 # -------------------------------
 #  Lex Bot & Intents
@@ -31,14 +32,14 @@ resource "aws_lex_intent" "register_help_intent" {
   name              = "RegisterHelpIntent"
   sample_utterances = ["How do I register?", "What is the signup process?", "Help me sign up"]
 
-  fulfillment_activity {
+    fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri             = aws_lambda_function.lambda["register_help"].invoke_arn
-      message_version = "1.0"
-    }
-  }
+        uri = aws_lambda_function.lex_lambda["register_help"].arn
 
+        message_version = "1.0"
+    }
+    }
   conclusion_statement {
     message {
       content      = "Thanks for asking!"
@@ -72,8 +73,9 @@ resource "aws_lex_intent" "find_booking_intent" {
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri             = aws_lambda_function.lambda["find_booking"].invoke_arn
-      message_version = "1.0"
+    uri = aws_lambda_function.lex_lambda["find_booking"].arn
+
+    message_version = "1.0"
     }
   }
 
@@ -111,8 +113,8 @@ resource "aws_lex_intent" "submit_concern_intent" {
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
-      uri             = aws_lambda_function.lambda["submit_concern"].invoke_arn
-      message_version = "1.0"
+    uri = aws_lambda_function.lex_lambda["submit_concern"].arn
+    message_version = "1.0"
     }
   }
 

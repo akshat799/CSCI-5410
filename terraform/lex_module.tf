@@ -6,20 +6,7 @@
 # -------------------------------
 # 1. Local lambda sources + auto zip
 # -------------------------------
-locals {
-  lambdas = {
-    register_help = "${path.module}/../lambda-functions/register_help.py"
-    find_booking  = "${path.module}/../lambda-functions/find_booking.py"
-    submit_concern = "${path.module}/../lambda-functions/submit_concern.py"
-  }
-}
 
-data "archive_file" "lambda_zips" {
-  for_each    = local.lambdas
-  type        = "zip"
-  source_file = each.value
-  output_path = "${path.module}/${each.key}.zip"
-}
 
 # -------------------------------
 # 2. DynamoDB Tables
@@ -110,23 +97,6 @@ data "aws_iam_policy_document" "lambda_policy" {
 # -------------------------------
 # 4. Lambda Functions (Python)
 # -------------------------------
-resource "aws_lambda_function" "lambda" {
-  for_each = data.archive_file.lambda_zips
-
-  function_name    = "${each.key}_lambda"
-  filename         = each.value.output_path
-  source_code_hash = each.value.output_base64sha256
-  handler          = "${each.key}.lambda_handler"
-  runtime          = "python3.12"
-  role             = aws_iam_role.lambda_exec.arn
-
-  environment {
-    variables = {
-      BOOKINGS_TABLE = aws_dynamodb_table.bookings.name
-      CONCERNS_TABLE = aws_dynamodb_table.concerns.name
-    }
-  }
-}
 
 # -------------------------------
 # Lambda permissions for Lex
@@ -143,13 +113,19 @@ resource "aws_lambda_permission" "lex_invoke" {
 # 5. Lex Bot & Intents
 # -------------------------------
 resource "aws_lex_slot_type" "booking_ref_type" {
-  name                      = "BookingReferenceType"
-  value_selection_strategy  = "ORIGINAL_VALUE"
+  name                     = "BookingReferenceType"
+  value_selection_strategy = "ORIGINAL_VALUE"
+
+  enumeration_value {
+    value = "dummyBooking"
+  }
 }
+
 
 resource "aws_lex_intent" "register_help_intent" {
   name              = "RegisterHelpIntent"
   sample_utterances = ["How do I register?", "What is the signup process?", "Help me sign up"]
+
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
@@ -157,10 +133,16 @@ resource "aws_lex_intent" "register_help_intent" {
       message_version = "1.0"
     }
   }
+
   conclusion_statement {
-    messages { content = "Thanks for asking!" content_type = "PlainText" }
+    message {
+      content      = "Thanks for asking!"
+      content_type = "PlainText"
+    }
   }
 }
+
+
 
 resource "aws_lex_intent" "find_booking_intent" {
   name              = "FindBookingIntent"
@@ -169,15 +151,21 @@ resource "aws_lex_intent" "find_booking_intent" {
     "Give me access code for booking {bookingReference}",
     "My booking reference is {bookingReference}"
   ]
-  slots {
+
+  slot {
     name                 = "bookingReference"
     slot_type             = aws_lex_slot_type.booking_ref_type.name
     slot_constraint       = "Required"
+
     value_elicitation_prompt {
       max_attempts = 2
-      messages { content = "Please tell me your booking reference code." content_type = "PlainText" }
+      message {
+        content      = "Please tell me your booking reference code."
+        content_type = "PlainText"
+      }
     }
   }
+
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
@@ -185,10 +173,15 @@ resource "aws_lex_intent" "find_booking_intent" {
       message_version = "1.0"
     }
   }
+
   conclusion_statement {
-    messages { content = "Hope that helps!" content_type = "PlainText" }
+    message {
+      content      = "Hope that helps!"
+      content_type = "PlainText"
+    }
   }
 }
+
 
 resource "aws_lex_intent" "submit_concern_intent" {
   name              = "SubmitConcernIntent"
@@ -197,15 +190,21 @@ resource "aws_lex_intent" "submit_concern_intent" {
     "There is a problem with my booking {bookingReference}",
     "Send concern for booking {bookingReference}"
   ]
-  slots {
+
+  slot {
     name                 = "bookingReference"
     slot_type             = aws_lex_slot_type.booking_ref_type.name
     slot_constraint       = "Required"
+
     value_elicitation_prompt {
       max_attempts = 2
-      messages { content = "What's your booking reference?" content_type = "PlainText" }
+      message {
+        content      = "What's your booking reference?"
+        content_type = "PlainText"
+      }
     }
   }
+
   fulfillment_activity {
     type = "CodeHook"
     code_hook {
@@ -213,17 +212,23 @@ resource "aws_lex_intent" "submit_concern_intent" {
       message_version = "1.0"
     }
   }
+
   conclusion_statement {
-    messages { content = "Your concern has been submitted to our support team." content_type = "PlainText" }
+    message {
+      content      = "Your concern has been submitted to our support team."
+      content_type = "PlainText"
+    }
   }
 }
 
+
 resource "aws_lex_bot" "dalscooter_bot" {
-  name                 = "DALScooterBot"
-  locale               = "en_US"
-  child_directed       = false
-  process_behavior     = "BUILD"
-  nlu_intent_confidence_threshold = 0.40
+  name                                 = "DALScooterBot"
+  locale                               = "en-US"
+  child_directed                       = false
+  process_behavior                     = "BUILD"
+  nlu_intent_confidence_threshold      = 0.40
+
   intent {
     intent_name    = aws_lex_intent.register_help_intent.name
     intent_version = "$LATEST"
@@ -236,14 +241,23 @@ resource "aws_lex_bot" "dalscooter_bot" {
     intent_name    = aws_lex_intent.submit_concern_intent.name
     intent_version = "$LATEST"
   }
+
   clarification_prompt {
     max_attempts = 2
-    messages { content = "Sorry, can you please rephrase?" content_type = "PlainText" }
+    message {
+      content      = "Sorry, can you please rephrase?"
+      content_type = "PlainText"
+    }
   }
+
   abort_statement {
-    messages { content = "I’m sorry, I couldn’t understand. Please try again later." content_type = "PlainText" }
+    message {
+      content      = "I’m sorry, I couldn’t understand. Please try again later."
+      content_type = "PlainText"
+    }
   }
 }
+
 
 resource "aws_lex_bot_alias" "prod_alias" {
   name        = "Prod"

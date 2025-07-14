@@ -5,6 +5,9 @@ locals {
     verify_auth = "${path.module}/../lambda-functions/verify_auth.py"
     qa_check = "${path.module}/../lambda-functions/lambda_qa.py"
     caesar_check  = "${path.module}/../lambda-functions/lambda_caesar.py"
+    register_help = "${path.module}/../lambda-functions/register_help.py"
+    find_booking  = "${path.module}/../lambda-functions/find_booking.py"
+    submit_concern = "${path.module}/../lambda-functions/submit_concern.py"
   }
 }
 
@@ -23,4 +26,11 @@ resource "aws_lambda_function" "lambda" {
   runtime = "python3.9"
   role = aws_iam_role.lambda_role.arn
   source_code_hash = each.value.output_base64sha256
+
+  environment {
+    variables = {
+      BOOKINGS_TABLE = aws_dynamodb_table.bookings.name
+      CONCERNS_TABLE = aws_dynamodb_table.concerns.name
+    }
+  }
 }

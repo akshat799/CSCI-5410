@@ -1,4 +1,3 @@
-// src/pages/OTPPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -46,7 +45,7 @@ export default function OTPPage() {
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
           <label>
-            Email
+            Email <br /><br />
             <input
               type="email"
               value={email}
@@ -55,7 +54,7 @@ export default function OTPPage() {
             />
           </label>
           <label>
-            Confirmation Code
+            Confirmation Code <br /><br />
             <input
               value={code}
               onChange={e => setCode(e.target.value)}
@@ -66,8 +65,15 @@ export default function OTPPage() {
             {loading ? 'Confirming…' : 'Confirm'}
           </button>
         </form>
-        <button onClick={handleResend}>Resend Code</button>
+
+        <button
+          onClick={handleResend}
+          style={{ marginTop: '1rem' }}
+        >
+          Resend Code
+        </button>
       </div>
     </>
   );
 }
+

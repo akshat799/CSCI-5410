@@ -25,8 +25,8 @@ export default function MFAQuestionPage() {
     setLoading(true);
     try {
       const next = await respondChallenge({ answer });
-
-      if (next === 'CAESAR') {
+      console.log("THIS IS THE NEXT:", next)
+      if (next.type === 'CAESAR') {
         navigate('/mfa-caesar');
       } else if (next === null) {
         navigate('/customer-home');

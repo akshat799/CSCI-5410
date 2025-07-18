@@ -24,15 +24,18 @@ export function AuthProvider({ children }) {
   };
 
 
-  const register = ({ name, email, password, question, answer }) => {
+  const register = ({ name, email, password, question, answer, role, caesarText, shiftKey }) => {
 
     return new Promise((res, rej) => {
       const attrs = [
-        new CognitoUserAttribute({ Name: 'username',        Value: email }),
-        new CognitoUserAttribute({ Name: 'email',             Value: email }),
-        new CognitoUserAttribute({ Name: 'name',              Value: name }),
+        new CognitoUserAttribute({ Name: 'username', Value: email }),
+        new CognitoUserAttribute({ Name: 'email', Value: email }),
+        new CognitoUserAttribute({ Name: 'name', Value: name }),
         new CognitoUserAttribute({ Name: 'custom:secQuestion',Value: question }),
-        new CognitoUserAttribute({ Name: 'custom:secAnswer',  Value: answer })
+        new CognitoUserAttribute({ Name: 'custom:secAnswer',  Value: answer }),
+        new CognitoUserAttribute({ Name: 'custom:role',      Value: role }),
+        new CognitoUserAttribute({ Name: 'custom:caesarText', Value: caesarText }),
+        new CognitoUserAttribute({ Name: 'custom:shiftKey',   Value: shiftKey })
       ];
       userPool.signUp(email, password, attrs, null, (err, result) => {
         if (err) rej(err);
@@ -41,7 +44,6 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // ─── CONFIRM SIGNUP (OTP) ────────────────────────────────────
   const confirmSignUp = ({ email, code }) => {
     return new Promise((res, rej) => {
         console.log('Confirming signup for:', email, 'with code:', code, );
@@ -53,7 +55,6 @@ export function AuthProvider({ children }) {
     });
   }
 
-  // ─── RESEND CONFIRM CODE ────────────────────────────────────
   const resendConfirmationCode = email => {
     return new Promise((res, rej) => {
       const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
@@ -64,7 +65,6 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // ─── LOGIN (SRP + CUSTOM_CHALLENGE) ─────────────────────────
   const login = async({ email, password }) => {
   return new Promise((res, rej) => {
     const authDetails = new AuthenticationDetails({ Username: email, Password: password });
@@ -92,19 +92,16 @@ export function AuthProvider({ children }) {
   });
 };
 
-  // ─── RESPOND TO CUSTOM_CHALLENGE ─────────────────────────────
   const respondChallenge = ({ answer }) => {
     return new Promise((res, rej) => {
       if (!pendingUser) {
         return rej(new Error('No pending challenge'));
       }
 
-      // normalize answer
       const ans = String(answer).trim().toLowerCase();
 
       pendingUser.sendCustomChallengeAnswer(ans, {
         onSuccess: session => {
-          // either another custom-challenge or final onSuccess
           const username = pendingUser.getUsername();
           const usr = { email: username, session };
           setUser(usr);
@@ -122,7 +119,6 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // ─── LOGOUT ────────────────────────────────────────────────
   const logout = () => {
     const cur = userPool.getCurrentUser();
     cur?.signOut();
@@ -130,7 +126,7 @@ export function AuthProvider({ children }) {
     clearChallengeParams();
     localStorage.removeItem('user');
   };
-
+  
   return (
     <AuthContext.Provider value={{
       user,

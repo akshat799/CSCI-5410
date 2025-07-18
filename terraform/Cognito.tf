@@ -16,6 +16,44 @@ resource "aws_cognito_user_pool" "main" {
     attribute_data_type = "String"
   }
 
+  schema {
+    name = "secQuestion"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
+
+  schema {
+    name = "secAnswer"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
+
+  schema {
+    name = "role"
+    attribute_data_type = "String"
+    mutable = true
+  }
+
+  schema {
+    name = "caesarText"
+    attribute_data_type = "String"
+    mutable = true
+  }
+  schema {
+    name = "shiftKey"
+    attribute_data_type = "Number"
+    required = false
+    mutable = true
+  }
+
   password_policy {
     minimum_length = 8
     require_lowercase = true
@@ -65,4 +103,17 @@ resource "aws_lambda_permission" "allow_cognito_verify" {
   function_name = aws_lambda_function.lambda["verify_auth"].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
+}
+resource "aws_cognito_user_group" "registered_customer" {
+  name         = "RegisteredCustomer"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"  
+  precedence   = 50
+}
+
+resource "aws_cognito_user_group" "franchise_operator" {
+  name         = "FranchiseOperator"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Admin users—can add/update scooters, view all bookings, and communicate with customers"
+  precedence   = 10
 }

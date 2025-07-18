@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         event['response']['issueTokens']        = False
         event['response']['failAuthentication'] = False
 
-    elif len(session) == 3 and session[2]['challengeName'] == "CUSTOM_CHALLENGE" and session[1]['challengeResult']:
+    elif len(session) == 3 and session[2]['challengeName'] == "CUSTOM_CHALLENGE" and session[2]['challengeResult']:
         event['response']['challengeName']      = 'CUSTOM_CHALLENGE'
         event['response']['issueTokens']        = False
         event['response']['failAuthentication'] = False

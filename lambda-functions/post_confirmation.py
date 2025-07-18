@@ -1,15 +1,20 @@
 import os
+import json
 import boto3
 import random
+import datetime
 
+ddb             = boto3.resource('dynamodb')
+qa_table        = ddb.Table('SecurityQA')
+caesar_table    = ddb.Table('CaesarChallenge')
+users_table     = ddb.Table('Users')
+cognito_client  = boto3.client('cognito-idp')
+sns_client      = boto3.client('sns')
 
-ddb = boto3.resource('dynamodb')
-qa_table = ddb.Table('SecurityQA')
-caesar_table = ddb.Table('CaesarChallenge')
-users_table = ddb.Table('Users')
+REG_TOPIC_ARN = os.environ.get('REGISTRATION_TOPIC_ARN')
+
 
 def apply_caesar_cipher(text, shift):
-    """Apply Caesar cipher with given shift"""
     result = ''
     for char in text:
         if char.isalpha():
@@ -19,46 +24,71 @@ def apply_caesar_cipher(text, shift):
             result += char
     return result
 
+
 def lambda_handler(event, context):
-    # Only run on a successful sign-up confirmation
-    if event.get('triggerSource') == 'PostConfirmation_ConfirmSignUp':
-        user = event['userName']
-        attrs = event['request']['userAttributes']
+    if event.get('triggerSource') != 'PostConfirmation_ConfirmSignUp':
+        return event
 
-        user_id = event['userName']
-        attrs = event['request']['userAttributes']
+    user_id = event['userName']
+    attrs   = event['request']['userAttributes']
+    pool_id = event['userPoolId']
 
-        # 1. Store basic user info
-        users_table.put_item(Item={
-            'user_id': user_id,
-            'email': attrs.get('email'),
-            'created_at': attrs.get('sub')
-        })
+    users_table.put_item(Item={
+        'user_id':    user_id,
+        'email':      attrs.get('email'),
+        'role':       attrs.get('custom:role', 'User'),
+        'created_at': datetime.datetime.now(datetime.timezone.utc).isoformat()
+    })
 
-        # Extract and normalize the custom attributes
-        question = attrs.get('custom:secQuestion', '')
-        answer = attrs.get('custom:secAnswer', '').strip().lower()
+    qa_table.put_item(Item={
+        'user_id':     user_id,
+        'secQuestion': attrs.get('custom:secQuestion', ''),
+        'secAnswer':   attrs.get('custom:secAnswer', '').strip().lower()
+    })
 
-        # 1) Store Security Q/A in its table
-        qa_table.put_item(Item={
-            'user_id': user,
-            'secQuestion': question,
-            'secAnswer': answer
-        })
-
-        # 2) Generate Caesar cipher challenge
-        plain_text = 'dal scooter'
+    plain_text = attrs.get('custom:plainText', 'default')
+    try:
+        shift = int(attrs.get('custom:shiftKey', 0))
+    except (TypeError, ValueError):
         shift = random.randint(1, 25)
-        challenge_text = apply_caesar_cipher(plain_text, shift)
-        
-        caesar_table.put_item(Item={
-            'user_id': user,
-            'plainText': plain_text,
-            'shift': shift,
-            'challenge_text': challenge_text
-        })
 
-    # Always return the event, unmodified
+    challenge_text = apply_caesar_cipher(plain_text, shift)
+    caesar_table.put_item(Item={
+        'user_id':       user_id,
+        'plainText':     plain_text,
+        'shift':         shift,
+        'challengeText': challenge_text
+    })
+
+    role = attrs.get('custom:role', 'User')
+    if role not in ['RegisteredCustomer', 'FranchiseOperator']:
+        raise ValueError(f"Invalid role: {role}")
+
+    cognito_client.admin_add_user_to_group(
+        UserPoolId=pool_id,
+        Username=user_id,
+        GroupName=role
+    )
+
+    if REG_TOPIC_ARN:
+        payload = {
+            'email':   attrs.get('email'),
+            'subject': 'Welcome to DALScooter!',
+            'message': (
+                f"Hi {attrs.get('name')},\n\n"
+                "Thank you for registering with DALScooter. "
+                "You now have full access to our fleet of e-bikes and exclusive features:\n"
+                " • Book rides instantly from our app\n"
+                " • Track and manage your trips\n\n"
+                "Happy riding!"
+            )
+        }
+        try:
+            sns_client.publish(
+                TopicArn=REG_TOPIC_ARN,
+                Message=json.dumps(payload)
+            )
+        except Exception as e:
+            print(f"Error sending SNS registration notification: {e}")
+
     return event
-
-

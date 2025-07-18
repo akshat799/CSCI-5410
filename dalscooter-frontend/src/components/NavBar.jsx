@@ -1,18 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './Navbar.css';
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "./Navbar.css";
 
 function Navbar() {
-  const { isLoggedIn, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const isLoggedIn = Boolean(user);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.preventDefault();
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
-    <div className="nav-container">
+    <nav className="nav-container">
       <div className="nav-brand">
         <Link to="/">DALScooter</Link>
       </div>
@@ -25,14 +27,14 @@ function Navbar() {
         ) : (
           <>
             <Link to="/customer-home">Profile</Link>
-            <Link to="/">Logout</Link>
-            {/* <button onClick={handleLogout} style={{cursor: 'pointer' }}>
+            {/* use a real link or button so we can call logout */}
+            <a href="/" onClick={handleLogout}>
               Logout
-            </button> */}
+            </a>
           </>
         )}
       </div>
-    </div>
+    </nav>
   );
 }
 

@@ -5,6 +5,13 @@ locals {
     verify_auth = "${path.module}/../lambda-functions/verify_auth.py"
     qa_check = "${path.module}/../lambda-functions/lambda_qa.py"
     caesar_check  = "${path.module}/../lambda-functions/lambda_caesar.py"
+    
+    add_availability  = "${path.module}/../lambda-functions/add_availability.py"
+    get_availability  = "${path.module}/../lambda-functions/get_availability.py"
+    book_slot         = "${path.module}/../lambda-functions/book_slot.py"
+    cancel_booking    = "${path.module}/../lambda-functions/cancel_booking.py"
+    get_bookings      = "${path.module}/../lambda-functions/get_bookings.py"
+    update_availability = "${path.module}/../lambda-functions/update_availability.py"  
   }
 }
 

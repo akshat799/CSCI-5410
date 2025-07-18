@@ -64,3 +64,40 @@ resource "aws_lambda_permission" "verify_auth_permission" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }
+
+resource "aws_iam_policy" "availability_booking_policy" {
+  name = "AvailabilityBookingPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid      = "AllowReadWriteToAvailability"
+        Effect   = "Allow"
+        Action   = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = aws_dynamodb_table.availability.arn
+      },
+      {
+        Sid      = "AllowFullScanAndWriteBookings"
+        Effect   = "Allow"
+        Action   = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Scan"
+        ]
+        Resource = aws_dynamodb_table.bookings.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_availability_booking_attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.availability_booking_policy.arn
+}
+

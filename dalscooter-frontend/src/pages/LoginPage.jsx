@@ -1,36 +1,76 @@
-import Navbar from '../components/Navbar';
+// src/pages/LoginPage.jsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 
-function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
+  const { login, challengeParams, user } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = e => {
-    e.preventDefault();
-    const form = e.target;
-    const email = form.elements[0].value.trim();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    if (!emailRegex.test(email)) {
-      alert('Please enter a valid email (e.g., name@example.com).');
-      return;
+  useEffect(() => {
+    if (challengeParams) {
+      if (challengeParams.challenge_type === 'QA') {
+        navigate('/mfa-question');
+      } else {
+        navigate('/mfa-caesar');
+      }
+    } else if (user) {
+      navigate('/customer-home');
     }
+  }, [challengeParams, user, navigate]);
 
-    navigate('/mfa-question');
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const next = await login({ email, password });
+      if (next) {
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'UserNotConfirmedException') {
+        navigate('/otp', { state: { email } });
+      } else {
+        setError(err.message || 'Login failed.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <Navbar />
       <div className="container">
-        <h2>Login to Your Account</h2>
-        <form onSubmit={handleLogin}>
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <button type="submit">Login</button>
+        <h2>Login</h2>
+        {error && <p className="error">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Logging in…' : 'Login'}
+          </button>
         </form>
       </div>
     </>
   );
 }
-
-export default LoginPage;

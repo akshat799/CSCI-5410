@@ -1,45 +1,54 @@
-import boto3
+import os
 import json
+import boto3
 
-lambda_client = boto3.client('lambda')
+dynamodb     = boto3.resource('dynamodb')
+qa_table     = dynamodb.Table('SecurityQA')
+caesar_table = dynamodb.Table('CaesarChallenge')
 
-def invoke_lambda(function_name, payload):
-    try:
-        response = lambda_client.invoke(
-            FunctionName=function_name,
-            InvocationType='RequestResponse',
-            Payload=json.dumps(payload)
-        )
-        result = json.loads(response['Payload'].read())
-        return result.get('valid', False)
-    except Exception as e:
-        print(f"Error invoking {function_name}: {e}")
-        return False
+sns_client   = boto3.client('sns')
+LOGIN_TOPIC  = os.environ.get('LOGIN_TOPIC_ARN')
+
 
 def lambda_handler(event, context):
-    user_id = event['userName']
-    metadata = event['request'].get('challengeMetadata')
-    user_answer = event['request'].get('challengeAnswer')
+    user_id  = event['userName']
+    answer   = event['request']['challengeAnswer']
+    metadata = event['request'].get('privateChallengeParameters', {})
+    passed   = False
 
-    if not user_id or not user_answer:
-        event['response']['answerCorrect'] = False
-        return event
+    if metadata.get('challenge_type') == 'QA':
+        item    = qa_table.get_item(Key={'user_id': user_id}).get('Item', {})
+        correct = item.get('secAnswer', '').strip().lower()
+        passed  = (answer.strip().lower() == correct)
 
-    if metadata == 'QA':
-        result = invoke_lambda('QAValidation', {
-            'user_id': user_id,
-            'answer': user_answer
-        })
-        event['response']['answerCorrect'] = result
+    elif metadata.get('challenge_type') == 'CAESAR':
+        correct = metadata.get('expected_answer', '').strip().lower()
+        passed  = (answer.strip().lower() == correct)
 
-    elif metadata == 'CAESAR':
-        result = invoke_lambda('CaesarValidation', {
-            'user_id': user_id,
-            'answer': user_answer
-        })
-        event['response']['answerCorrect'] = result
+    event['response']['answerCorrect'] = passed
 
-    else:
-        event['response']['answerCorrect'] = False
+    if metadata.get('challenge_type') == 'CAESAR' and passed and LOGIN_TOPIC:
+        email   = event['request']['userAttributes'].get('email')
+        payload = {
+            'email':   email,
+            'subject': 'Welcome Back to DALScooter!',
+            'message': (
+                f"Hi {user_id},\n\n"
+                "You’ve successfully logged into your DALScooter account.\n\n"
+                "What’s new:\n"
+                " • Quick-start rides right from the app home screen\n"
+                " • Real-time trip tracking and history\n"
+                " • Enhanced rewards dashboard to earn more with every ride\n\n"
+                "If this wasn’t you, please reset your password immediately.\n\n"
+                "Happy riding!\n"
+            )
+        }
+        try:
+            sns_client.publish(
+                TopicArn=LOGIN_TOPIC,
+                Message=json.dumps(payload)
+            )
+        except Exception as e:
+            print(f"Error sending SNS login notification: {e}")
 
     return event

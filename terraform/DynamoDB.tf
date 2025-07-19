@@ -19,7 +19,6 @@ resource "aws_dynamodb_table" "user_data" {
     type = "S"
   }
 }
-
 resource "aws_dynamodb_table" "security_questions" {
   name         = "SecurityQA"
   billing_mode = "PAY_PER_REQUEST"

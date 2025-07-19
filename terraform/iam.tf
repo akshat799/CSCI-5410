@@ -48,33 +48,33 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_exec_mfa" {
 
 
 resource "aws_lambda_permission" "define_auth_permission" {
-  statement_id  = "AllowCognitoDefineAuth"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda["define_auth"].function_name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = aws_cognito_user_pool.main.arn
+  statement_id_prefix = "AllowCognitoDefineAuth"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda["define_auth"].function_name
+  principal           = "cognito-idp.amazonaws.com"
+  source_arn          = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "create_auth_permission" {
-  statement_id  = "AllowCognitoCreateAuth"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda["create_auth"].function_name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = aws_cognito_user_pool.main.arn
+  statement_id_prefix = "AllowCognitoCreateAuth"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda["create_auth"].function_name
+  principal           = "cognito-idp.amazonaws.com"
+  source_arn          = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "verify_auth_permission" {
-  statement_id  = "AllowCognitoVerifyAuth"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda["verify_auth"].function_name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = aws_cognito_user_pool.main.arn
+  statement_id_prefix = "AllowCognitoVerifyAuth"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda["verify_auth"].function_name
+  principal           = "cognito-idp.amazonaws.com"
+  source_arn          = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "post_confirmation_permission" {
-  statement_id  = "AllowCognitoPostConfirmation"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda["post_confirmation"].function_name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = aws_cognito_user_pool.main.arn
+  statement_id_prefix = "AllowCognitoPostConfirmation"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda["post_confirmation"].function_name
+  principal           = "cognito-idp.amazonaws.com"
+  source_arn          = aws_cognito_user_pool.main.arn
 }

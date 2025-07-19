@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import MFAQuestionPage from './pages/MFAQuestionPage';
 import MFACaesarPage from './pages/MFACaesarPage';
 import CustomerHomePage from './pages/CustomerHomePage';
+import OTPPage from './pages/OTPPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/mfa-question" element={<MFAQuestionPage />} />
       <Route path="/mfa-caesar" element={<MFACaesarPage />} />
       <Route path="/customer-home" element={<CustomerHomePage />} />
+      <Route path="/otp" element={<OTPPage />} />
     </Routes>
   );
 }

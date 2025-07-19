@@ -4,10 +4,10 @@ import "./Navbar.css";
 
 function Navbar() {
   const { user, logout } = useAuth();
-  const isLoggedIn = Boolean(user);
-  const navigate = useNavigate();
+  const isLoggedIn       = Boolean(user);
+  const navigate         = useNavigate();
 
-  const handleLogout = (e) => {
+  const handleLogout = e => {
     e.preventDefault();
     logout();
     navigate("/");
@@ -19,7 +19,7 @@ function Navbar() {
         <Link to="/">DALScooter</Link>
       </div>
       <div className="nav-links">
-        {!isLoggedIn ? (
+        { !isLoggedIn ? (
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
@@ -28,9 +28,7 @@ function Navbar() {
           <>
             <Link to="/customer-home">Profile</Link>
             {/* use a real link or button so we can call logout */}
-            <a href="/" onClick={handleLogout}>
-              Logout
-            </a>
+            <a href="/" onClick={handleLogout}>Logout</a>
           </>
         )}
       </div>

@@ -4,19 +4,10 @@ locals {
     create_auth       = "${path.module}/../lambda-functions/create_auth.py"
     verify_auth       = "${path.module}/../lambda-functions/verify_auth.py"
     post_confirmation = "${path.module}/../lambda-functions/post_confirmation.py"
-
-    add_availability    = "${path.module}/../lambda-functions/add_availability.py"
-    get_availability    = "${path.module}/../lambda-functions/get_availability.py"
-    book_slot           = "${path.module}/../lambda-functions/book_slot.py"
-    cancel_booking      = "${path.module}/../lambda-functions/cancel_booking.py"
-    get_bookings        = "${path.module}/../lambda-functions/get_bookings.py"
-    update_availability = "${path.module}/../lambda-functions/update_availability.py"
   }
 }
 
 data "archive_file" "lambda_zips" {
-  for_each    = local.lambdas
-  type        = "zip"
   for_each    = local.lambdas
   type        = "zip"
   source_file = each.value

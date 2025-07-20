@@ -53,11 +53,11 @@ resource "aws_lambda_permission" "verify_auth_permission" {
 }
 
 resource "aws_lambda_permission" "post_confirmation_permission" {
-  statement_id_prefix  = "AllowCognitoPostConfirmation"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda["post_confirmation"].function_name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = aws_cognito_user_pool.main.arn
+  statement_id_prefix = "AllowCognitoPostConfirmation"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda["post_confirmation"].function_name
+  principal           = "cognito-idp.amazonaws.com"
+  source_arn          = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
@@ -67,8 +67,8 @@ resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "cognito-idp:AdminAddUserToGroup",
           "cognito-idp:AdminRemoveUserFromGroup"
         ],

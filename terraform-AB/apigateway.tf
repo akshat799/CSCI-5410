@@ -9,7 +9,6 @@ resource "aws_api_gateway_resource" "booking_resource" {
   path_part   = "booking"
 }
 
-
 locals {
   lambda_routes = {
     add_availability    = { method = "POST", path = "add" }
@@ -47,12 +46,17 @@ resource "aws_api_gateway_integration" "lambda_integrations" {
 }
 
 resource "aws_lambda_permission" "api_gateway_permissions" {
-  for_each      = local.lambda_routes
-  statement_id  = "AllowAPIGatewayInvoke_${each.key}"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda[each.key].function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.dalscooter_api.execution_arn}/*/*"
+  for_each            = local.lambda_routes
+  statement_id_prefix = "AllowAPIGatewayInvoke_${each.key}"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda[each.key].function_name
+  principal           = "apigateway.amazonaws.com"
+  source_arn          = "${aws_api_gateway_rest_api.dalscooter_api.execution_arn}/*/*"
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [statement_id]
+  }
 }
 
 resource "aws_api_gateway_deployment" "dalscooter_deploy" {
@@ -64,9 +68,13 @@ resource "aws_api_gateway_deployment" "dalscooter_deploy" {
     aws_api_gateway_integration.lambda_integrations["get_bookings"],
     aws_api_gateway_integration.lambda_integrations["update_availability"]
   ]
-  rest_api_id = aws_api_gateway_rest_api.dalscooter_api.id
-}
 
+  rest_api_id = aws_api_gateway_rest_api.dalscooter_api.id
+
+  triggers = {
+    redeploy_hash = timestamp()
+  }
+}
 
 resource "aws_api_gateway_stage" "prod" {
   stage_name    = "prod"
@@ -75,8 +83,6 @@ resource "aws_api_gateway_stage" "prod" {
 }
 
 output "api_base_url" {
-  value       = "https://${aws_api_gateway_rest_api.dalscooter_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/prod"
+  value       = "https://${aws_api_gateway_rest_api.dalscooter_api.id}.execute-api.us-east-1.amazonaws.com/prod"
   description = "Base URL of the deployed API Gateway"
 }
-
-data "aws_region" "current" {}

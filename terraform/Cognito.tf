@@ -5,21 +5,21 @@ resource "aws_cognito_user_pool" "main" {
     define_auth_challenge          = aws_lambda_function.lambda["define_auth"].arn
     create_auth_challenge          = aws_lambda_function.lambda["create_auth"].arn
     verify_auth_challenge_response = aws_lambda_function.lambda["verify_auth"].arn
-    post_confirmation = aws_lambda_function.lambda["post_confirmation"].arn
+    post_confirmation              = aws_lambda_function.lambda["post_confirmation"].arn
   }
 
   auto_verified_attributes = ["email"]
 
   schema {
-    name = "email"
-    required = true
+    name                = "email"
+    required            = true
     attribute_data_type = "String"
   }
 
   schema {
-    name = "secQuestion"
+    name                = "secQuestion"
     attribute_data_type = "String"
-    mutable = true
+    mutable             = true
     string_attribute_constraints {
       min_length = 1
       max_length = 256
@@ -27,9 +27,9 @@ resource "aws_cognito_user_pool" "main" {
   }
 
   schema {
-    name = "secAnswer"
+    name                = "secAnswer"
     attribute_data_type = "String"
-    mutable = true
+    mutable             = true
     string_attribute_constraints {
       min_length = 1
       max_length = 256
@@ -37,29 +37,29 @@ resource "aws_cognito_user_pool" "main" {
   }
 
   schema {
-    name = "role"
+    name                = "role"
     attribute_data_type = "String"
-    mutable = true
+    mutable             = true
   }
 
   schema {
-    name = "caesarText"
+    name                = "caesarText"
     attribute_data_type = "String"
-    mutable = true
+    mutable             = true
   }
   schema {
-    name = "shiftKey"
+    name                = "shiftKey"
     attribute_data_type = "Number"
-    required = false
-    mutable = true
+    required            = false
+    mutable             = true
   }
 
   password_policy {
-    minimum_length = 8
+    minimum_length    = 8
     require_lowercase = true
     require_uppercase = true
-    require_numbers = true
-    require_symbols = false
+    require_numbers   = true
+    require_symbols   = false
   }
 }
 
@@ -71,7 +71,7 @@ resource "aws_lambda_permission" "allow_cognito_post_confirmation" {
   source_arn          = aws_cognito_user_pool.main.arn
 }
 resource "aws_cognito_user_pool_client" "client" {
-  name = "UserPoolClient"
+  name         = "UserPoolClient"
   user_pool_id = aws_cognito_user_pool.main.id
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
@@ -107,7 +107,7 @@ resource "aws_lambda_permission" "allow_cognito_verify" {
 resource "aws_cognito_user_group" "registered_customer" {
   name         = "RegisteredCustomer"
   user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"  
+  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"
   precedence   = 50
 }
 
@@ -120,7 +120,7 @@ resource "aws_cognito_user_group" "franchise_operator" {
 resource "aws_cognito_user_group" "registered_customer" {
   name         = "RegisteredCustomer"
   user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"  
+  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"
   precedence   = 50
 }
 

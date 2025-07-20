@@ -70,6 +70,10 @@ export function AuthProvider({ children }) {
     const authDetails = new AuthenticationDetails({ Username: email, Password: password });
     const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
 
+    console.log("Auth details:", authDetails);
+    console.log("User:", cognitoUser);
+
+
     setPendingUser(cognitoUser);
     cognitoUser.setAuthenticationFlowType('CUSTOM_AUTH');
 

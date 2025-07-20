@@ -5,9 +5,9 @@ variable "notification_queue_name" {
 }
 
 resource "aws_sqs_queue" "notification_queue" {
-  name                         = var.notification_queue_name
-  visibility_timeout_seconds   = 30
-  message_retention_seconds    = 1209600
+  name                       = var.notification_queue_name
+  visibility_timeout_seconds = 30
+  message_retention_seconds  = 1209600
 }
 
 resource "aws_sns_topic" "registration_topic" {
@@ -32,7 +32,7 @@ resource "aws_ses_email_identity" "test_recipients" {
 
 resource "aws_sqs_queue_policy" "notification_queue_policy" {
   queue_url = aws_sqs_queue.notification_queue.id
-  policy    = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
@@ -42,7 +42,7 @@ resource "aws_sqs_queue_policy" "notification_queue_policy" {
         Resource  = aws_sqs_queue.notification_queue.arn,
         Condition = {
           ArnEquals = {
-            "aws:SourceArn": [
+            "aws:SourceArn" : [
               aws_sns_topic.registration_topic.arn,
               aws_sns_topic.login_topic.arn
             ]
@@ -106,7 +106,7 @@ resource "aws_iam_role_policy" "lambda_ses_send" {
   name = "LambdaSESSend"
   role = aws_iam_role.lambda_role.name
   policy = jsonencode({
-    Version   = "2012-10-17",
+    Version = "2012-10-17",
     Statement = [{
       Effect   = "Allow",
       Action   = ["ses:SendEmail", "ses:SendRawEmail", "ses:SendTemplatedEmail", "ses:SendBulkTemplatedEmail"],

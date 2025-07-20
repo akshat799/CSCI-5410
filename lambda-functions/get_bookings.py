@@ -5,8 +5,8 @@ from decimal import Decimal
 import jwt
 import urllib.request
 
-COGNITO_USERPOOL_ID = "us-east-1_eSpO3xVoo"
-APP_CLIENT_ID = "2d8qd5us515158b4knocrgapoh"
+COGNITO_USERPOOL_ID = "us-east-1_YhCFqNhoE"
+APP_CLIENT_ID = "4mi9pp764n686omtihftgp0b3i"
 REGION = "us-east-1"
 
 # Download and cache JWKs

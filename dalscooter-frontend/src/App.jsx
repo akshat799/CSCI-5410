@@ -5,6 +5,8 @@ import RegisterPage from './pages/RegisterPage';
 import MFAQuestionPage from './pages/MFAQuestionPage';
 import MFACaesarPage from './pages/MFACaesarPage';
 import CustomerHomePage from './pages/CustomerHomePage';
+import FranchiseDashboard from './pages/FranchiseDashboard';
+import BookBikePage from './pages/BookBikePage';
 import OTPPage from './pages/OTPPage';
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
       <Route path="/mfa-question" element={<MFAQuestionPage />} />
       <Route path="/mfa-caesar" element={<MFACaesarPage />} />
       <Route path="/customer-home" element={<CustomerHomePage />} />
+      <Route path="/franchise-dashboard" element={<FranchiseDashboard />} />
+      <Route path="/book-bike" element={<BookBikePage />} />
       <Route path="/otp" element={<OTPPage />} />
     </Routes>
   );

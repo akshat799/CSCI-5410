@@ -29,3 +29,5 @@ resource "aws_dynamodb_table" "caesar_cipher" {
     type = "S"
   }
 }
+
+

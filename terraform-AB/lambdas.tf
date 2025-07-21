@@ -35,4 +35,7 @@ resource "aws_lambda_function" "lambda" {
   runtime          = "python3.12"
   role = "arn:aws:iam::370161336954:role/lambda_mfa_role"
   timeout = 10
+  layers = [
+    "arn:aws:lambda:us-east-1:370161336954:layer:jwt-crypto-layer:1"
+  ]
 }

@@ -4,8 +4,8 @@ import './Navbar.css';
 
 function Navbar() {
   const { user, logout } = useAuth();
-  const isLoggedIn       = Boolean(user);
-  const navigate         = useNavigate();
+  const isLoggedIn = Boolean(user);
+  const navigate = useNavigate();
 
   const handleLogout = e => {
     e.preventDefault();
@@ -13,21 +13,43 @@ function Navbar() {
     navigate('/');
   };
 
+  const getHomeLink = () => {
+    if (!user) return '/';
+    return user.role === 'FranchiseOperator' ? '/franchise-dashboard' : '/customer-home';
+  };
+
+  const getProfileText = () => {
+    if (!user) return 'Profile';
+    // Check current page to determine role context
+    const currentPath = window.location.pathname;
+    return currentPath.includes('franchise') ? 'Dashboard' : 'Profile';
+  };
+
+  const getRoleDisplay = () => {
+    if (!user) return '';
+    const currentPath = window.location.pathname;
+    return currentPath.includes('franchise') ? 'Franchise' : 'Customer';
+  };
+
   return (
     <nav className="nav-container">
       <div className="nav-brand">
-        <Link to="/">DALScooter</Link>
+        <Link to={getHomeLink()}>DALScooter</Link>
       </div>
       <div className="nav-links">
-        { !isLoggedIn ? (
+        {!isLoggedIn ? (
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
           </>
         ) : (
           <>
-            <Link to="/customer-home">Profile</Link>
-            {/* use a real link or button so we can call logout */}
+            <Link to={getHomeLink()}>{getProfileText()}</Link>
+            {user && (
+              <span className="text-sm text-gray-600 mr-2">
+                ({getRoleDisplay()})
+              </span>
+            )}
             <a href="/" onClick={handleLogout}>Logout</a>
           </>
         )}

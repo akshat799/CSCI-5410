@@ -1,1 +1,16 @@
-.terraform/
+# Node and Lambda artifacts
+lambdas/node_modules/
+lambdas/*.zip
+lambdas/*.log
+lambdas/.env*
+
+# Terraform build artifacts
+terraform-AB/.terraform/
+terraform-AB/*.tfstate*
+terraform-AB/*.tfplan
+terraform-AB/crash.log
+
+# Common system/IDE files
+.DS_Store
+.vscode/
+.idea/

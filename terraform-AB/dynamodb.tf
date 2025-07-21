@@ -14,10 +14,10 @@ resource "aws_dynamodb_table" "availability" {
     type = "S"
   }
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [read_capacity, write_capacity]
-  }
+#  lifecycle {
+#    prevent_destroy = true
+#    ignore_changes  = [read_capacity, write_capacity]
+#  }
 }
 
 
@@ -31,8 +31,8 @@ resource "aws_dynamodb_table" "bookings" {
     type = "S"
   }
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [read_capacity, write_capacity]
-  }
+  #lifecycle {
+  #  prevent_destroy = true
+  #  ignore_changes  = [read_capacity, write_capacity]
+  #}
 }

@@ -14,7 +14,7 @@ resource "aws_iam_policy" "add_availability_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "add_availability_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = aws_iam_policy.add_availability_policy.arn
 }
 
@@ -41,7 +41,7 @@ resource "aws_iam_policy" "book_slot_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "book_slot_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = aws_iam_policy.book_slot_policy.arn
 }
 
@@ -61,7 +61,7 @@ resource "aws_iam_policy" "cancel_booking_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "cancel_booking_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = aws_iam_policy.cancel_booking_policy.arn
 }
 
@@ -69,7 +69,7 @@ resource "aws_iam_role_policy_attachment" "cancel_booking_attach" {
 # get_availability (Full Access for convenience)
 # -----------------------
 resource "aws_iam_role_policy_attachment" "get_availability_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
@@ -89,7 +89,7 @@ resource "aws_iam_policy" "get_bookings_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "get_bookings_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = aws_iam_policy.get_bookings_policy.arn
 }
 
@@ -109,6 +109,6 @@ resource "aws_iam_policy" "update_availability_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "update_availability_attach" {
-  role       = aws_iam_role.lambda_role.name
+  role = "lambda_mfa_role"
   policy_arn = aws_iam_policy.update_availability_policy.arn
 }

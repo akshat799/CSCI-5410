@@ -1,19 +1,12 @@
 locals {
-  lambdas = {
-    add_availability    = "../lambda-functions/add_availability.py"
-    get_availability    = "../lambda-functions/get_availability.py"
-    book_slot           = "../lambda-functions/book_slot.py"
-    cancel_booking      = "../lambda-functions/cancel_booking.py"
-    get_bookings        = "../lambda-functions/get_bookings.py"
-    update_availability = "../lambda-functions/update_availability.py"
+  lambda_zips = {
+    add_availability    = "add_availability.zip"
+    get_availability    = "get_availability.zip"
+    book_slot           = "book_slot.zip"
+    cancel_booking      = "cancel_booking.zip"
+    get_bookings        = "get_bookings.zip"
+    update_availability = "update_availability.zip"
   }
-}
-
-data "archive_file" "lambda_zips" {
-  for_each    = local.lambdas
-  type        = "zip"
-  source_file = each.value
-  output_path = "${path.module}/${each.key}.zip"
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -34,16 +27,12 @@ resource "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  for_each         = data.archive_file.lambda_zips
+  for_each         = local.lambda_zips
   function_name    = each.key
-  filename         = each.value.output_path
-  source_code_hash = each.value.output_base64sha256
+  filename         = "${path.module}/zips/${each.value}"
+  source_code_hash = filebase64sha256("${path.module}/zips/${each.value}")
   handler          = "${each.key}.lambda_handler"
   runtime          = "python3.12"
-  role             = aws_iam_role.lambda_role.arn
-
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [source_code_hash, filename]
-  }
+  role = "arn:aws:iam::370161336954:role/lambda_mfa_role"
+  timeout = 10
 }

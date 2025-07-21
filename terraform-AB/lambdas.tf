@@ -10,7 +10,7 @@ locals {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_role_booking_ab"
+  name = "lambda_role_booking_av"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -26,16 +26,20 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "basic_execution_logs" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_lambda_function" "lambda" {
   for_each         = local.lambda_zips
   function_name    = each.key
-  filename         = "${path.module}/zips/${each.value}"
-  source_code_hash = filebase64sha256("${path.module}/zips/${each.value}")
-  handler          = "${each.key}.lambda_handler"
-  runtime          = "python3.12"
-  role = "arn:aws:iam::370161336954:role/lambda_mfa_role"
+  filename         = "${path.module}/../lambdas/${each.value}"
+  source_code_hash = filebase64sha256("${path.module}/../lambdas/${each.value}")
+
+  handler          = "${each.key}.handler"     # Node.js uses <filename>.handler
+  runtime          = "nodejs18.x"
+  role             = aws_iam_role.lambda_role.arn
+
   timeout = 10
-  layers = [
-    "arn:aws:lambda:us-east-1:370161336954:layer:jwt-crypto-layer:1"
-  ]
 }

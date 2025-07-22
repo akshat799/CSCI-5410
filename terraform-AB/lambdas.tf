@@ -37,8 +37,8 @@ resource "aws_lambda_function" "lambda" {
   filename         = "${path.module}/../lambdas/${each.value}"
   source_code_hash = filebase64sha256("${path.module}/../lambdas/${each.value}")
 
-  handler          = "${each.key}.handler"     # Node.js uses <filename>.handler
-  runtime          = "nodejs18.x"
+  handler          = "${each.key}.lambda_handler"   # ✅ Python handler
+  runtime          = "python3.12"                   # ✅ Python runtime
   role             = aws_iam_role.lambda_role.arn
 
   timeout = 10

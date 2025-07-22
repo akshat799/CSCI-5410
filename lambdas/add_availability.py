@@ -14,11 +14,11 @@ def lambda_handler(event, context):
         date = body['date']
         slots = body['slots']
 
-        if not scooter_id or not date or not isinstance(slots, list):
+        if not isinstance(slots, list):
             return {
                 "statusCode": 400,
-                "headers": { "Content-Type": "application/json" },
-                "body": json.dumps({ "error": "Missing or invalid fields" })
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Slots must be a list"})
             }
 
         table.put_item(
@@ -31,14 +31,13 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": { "Content-Type": "application/json" },
-            "body": json.dumps({ "message": "Slot added successfully" })
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"message": "Slot added successfully"})
         }
 
     except Exception as e:
-        print("Exception occurred:", str(e))
         return {
             "statusCode": 500,
-            "headers": { "Content-Type": "application/json" },
-            "body": json.dumps({ "error": str(e) })
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
         }

@@ -12,6 +12,9 @@ def decimal_default(obj):
     raise TypeError
 
 def lambda_handler(event, context):
+    auth_header = event['headers'].get('Authorization', '')
+    print("Authorization Header:", auth_header)
+
     try:
         params = event.get("queryStringParameters") or {}
         booking_ref = params.get("bookingReference")

@@ -6,6 +6,9 @@ dynamodb = boto3.resource('dynamodb')
 bookings_table = dynamodb.Table('Bookings')
 
 def lambda_handler(event, context):
+    auth_header = event['headers'].get('Authorization', '')
+    print("Authorization Header:", auth_header)
+
     try:
         body = event if isinstance(event, dict) else json.loads(event["body"])
         booking_ref = body.get("bookingReference")

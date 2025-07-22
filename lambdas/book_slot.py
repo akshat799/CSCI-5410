@@ -5,7 +5,11 @@ from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb')
 availability_table = dynamodb.Table('Availability')
 bookings_table = dynamodb.Table('Bookings')
+
 def lambda_handler(event, context):
+    auth_header = event['headers'].get('Authorization', '')
+    print("Authorization Header:", auth_header)
+
     try:
         body = event if isinstance(event, dict) and 'scooterId' in event else json.loads(event["body"])
         

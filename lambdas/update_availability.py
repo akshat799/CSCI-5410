@@ -6,6 +6,9 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('Availability')
 
 def lambda_handler(event, context):
+    auth_header = event['headers'].get('Authorization', '')
+    print("Authorization Header:", auth_header)
+
     try:
         body = json.loads(event['body']) if 'body' in event else event
 

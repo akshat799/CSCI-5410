@@ -5,14 +5,21 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('Availability')
 
 def lambda_handler(event, context):
+    auth_header = event['headers'].get('Authorization', '')
+    print("Authorization Header:", auth_header)
+
     try:
-        body = json.loads(event['body']) if 'body' in event else event
+        body = json.loads(event.get('body', '{}'))
         scooter_id = body['scooterId']
         date = body['date']
         slots = body['slots']
 
-        if not isinstance(slots, list):
-            return {"statusCode": 400, "body": json.loads(json.dumps({"error": "Slots must be a list"}))}
+        if not scooter_id or not date or not isinstance(slots, list):
+            return {
+                "statusCode": 400,
+                "headers": { "Content-Type": "application/json" },
+                "body": json.dumps({ "error": "Missing or invalid fields" })
+            }
 
         table.put_item(
             Item={
@@ -24,8 +31,14 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "body": json.loads(json.dumps({"message": "Availability added/updated"}))
+            "headers": { "Content-Type": "application/json" },
+            "body": json.dumps({ "message": "Slot added successfully" })
         }
 
     except Exception as e:
-        return {"statusCode": 500, "body": json.loads(json.dumps({"error": str(e)}))}
+        print("Exception occurred:", str(e))
+        return {
+            "statusCode": 500,
+            "headers": { "Content-Type": "application/json" },
+            "body": json.dumps({ "error": str(e) })
+        }

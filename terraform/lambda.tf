@@ -7,6 +7,7 @@ locals {
     notification_consumer = "${path.module}/../lambda-functions/notification_consumer.py"
     bike_management       = "${path.module}/../lambda-functions/bike_management.py"  
     get_bikes_public      = "${path.module}/../lambda-functions/get_bikes_public.py"
+    feedback_management   = "${path.module}/../lambda-functions/feedback_management.py"
   }
 }
 

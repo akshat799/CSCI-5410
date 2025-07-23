@@ -8,6 +8,7 @@ import CustomerHomePage from './pages/CustomerHomePage';
 import FranchiseDashboard from './pages/FranchiseDashboard';
 import BookBikePage from './pages/BookBikePage';
 import OTPPage from './pages/OTPPage';
+import FeedbackPage from './pages/FeedbackPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/franchise-dashboard" element={<FranchiseDashboard />} />
       <Route path="/book-bike" element={<BookBikePage />} />
       <Route path="/otp" element={<OTPPage />} />
+      <Route path="/feedback" element={<FeedbackPage />} />
     </Routes>
   );
 }

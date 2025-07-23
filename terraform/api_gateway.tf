@@ -15,6 +15,7 @@ resource "aws_api_gateway_authorizer" "cognito_authorizer" {
   provider_arns = [aws_cognito_user_pool.main.arn]
 }
 
+# BIKE RESOURCES
 resource "aws_api_gateway_resource" "bikes" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   parent_id   = aws_api_gateway_rest_api.bike_api.root_resource_id
@@ -33,6 +34,21 @@ resource "aws_api_gateway_resource" "public_bikes" {
   parent_id   = aws_api_gateway_rest_api.bike_api.root_resource_id
   path_part   = "public-bikes"
 }
+
+# FEEDBACK RESOURCES
+resource "aws_api_gateway_resource" "feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  parent_id   = aws_api_gateway_rest_api.bike_api.root_resource_id
+  path_part   = "feedback"
+}
+
+resource "aws_api_gateway_resource" "feedback_bike" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  parent_id   = aws_api_gateway_resource.feedback.id
+  path_part   = "{bike_id}"
+}
+
+# ===== BIKE METHODS =====
 
 # POST /bikes (create bike) - WITH COGNITO AUTH
 resource "aws_api_gateway_method" "create_bike" {
@@ -53,7 +69,6 @@ resource "aws_api_gateway_integration" "create_bike" {
   uri                    = aws_lambda_function.lambda["bike_management"].invoke_arn
 }
 
-# Add method response for POST
 resource "aws_api_gateway_method_response" "create_bike" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.bikes.id
@@ -84,7 +99,6 @@ resource "aws_api_gateway_integration" "get_bikes" {
   uri                    = aws_lambda_function.lambda["bike_management"].invoke_arn
 }
 
-# Add method response for GET
 resource "aws_api_gateway_method_response" "get_bikes" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.bikes.id
@@ -101,7 +115,7 @@ resource "aws_api_gateway_method" "get_public_bikes" {
   rest_api_id   = aws_api_gateway_rest_api.bike_api.id
   resource_id   = aws_api_gateway_resource.public_bikes.id
   http_method   = "GET"
-  authorization = "NONE"  # No authentication required
+  authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "get_public_bikes" {
@@ -114,7 +128,6 @@ resource "aws_api_gateway_integration" "get_public_bikes" {
   uri                    = aws_lambda_function.lambda["get_bikes_public"].invoke_arn
 }
 
-# Method response for public bikes
 resource "aws_api_gateway_method_response" "get_public_bikes" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.public_bikes.id
@@ -145,7 +158,6 @@ resource "aws_api_gateway_integration" "update_bike" {
   uri                    = aws_lambda_function.lambda["bike_management"].invoke_arn
 }
 
-# Add method response for PUT
 resource "aws_api_gateway_method_response" "update_bike" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.bike_id.id
@@ -176,7 +188,6 @@ resource "aws_api_gateway_integration" "delete_bike" {
   uri                    = aws_lambda_function.lambda["bike_management"].invoke_arn
 }
 
-# Add method response for DELETE
 resource "aws_api_gateway_method_response" "delete_bike" {
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.bike_id.id
@@ -187,6 +198,98 @@ resource "aws_api_gateway_method_response" "delete_bike" {
     "method.response.header.Access-Control-Allow-Origin" = true
   }
 }
+
+# ===== FEEDBACK METHODS =====
+
+# POST /feedback (submit feedback) - WITH COGNITO AUTH
+resource "aws_api_gateway_method" "submit_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.feedback.id
+  http_method   = "POST"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+resource "aws_api_gateway_integration" "submit_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.submit_feedback.http_method
+
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.lambda["feedback_management"].invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "submit_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.submit_feedback.http_method
+  status_code = "201"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# GET /feedback (get all feedback) - NO AUTH REQUIRED (public)
+resource "aws_api_gateway_method" "get_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.feedback.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "get_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.get_feedback.http_method
+
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.lambda["feedback_management"].invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "get_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.get_feedback.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# GET /feedback/{bike_id} (get feedback for specific bike) - NO AUTH REQUIRED (public)
+resource "aws_api_gateway_method" "get_bike_feedback" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.feedback_bike.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "get_bike_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback_bike.id
+  http_method = aws_api_gateway_method.get_bike_feedback.http_method
+
+  integration_http_method = "POST"
+  type                   = "AWS_PROXY"
+  uri                    = aws_lambda_function.lambda["feedback_management"].invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "get_bike_feedback" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback_bike.id
+  http_method = aws_api_gateway_method.get_bike_feedback.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# ===== CORS METHODS =====
 
 # Enable CORS for /bikes
 resource "aws_api_gateway_method" "bikes_options" {
@@ -335,6 +438,106 @@ resource "aws_api_gateway_integration_response" "public_bikes_options" {
   }
 }
 
+# CORS for /feedback
+resource "aws_api_gateway_method" "feedback_options" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.feedback.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "feedback_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.feedback_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+  }
+}
+
+resource "aws_api_gateway_method_response" "feedback_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.feedback_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "feedback_options" {
+  depends_on = [aws_api_gateway_integration.feedback_options]
+  
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback.id
+  http_method = aws_api_gateway_method.feedback_options.http_method
+  status_code = aws_api_gateway_method_response.feedback_options.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
+# CORS for /feedback/{bike_id}
+resource "aws_api_gateway_method" "feedback_bike_options" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.feedback_bike.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "feedback_bike_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback_bike.id
+  http_method = aws_api_gateway_method.feedback_bike_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+  }
+}
+
+resource "aws_api_gateway_method_response" "feedback_bike_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback_bike.id
+  http_method = aws_api_gateway_method.feedback_bike_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "feedback_bike_options" {
+  depends_on = [aws_api_gateway_integration.feedback_bike_options]
+  
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.feedback_bike.id
+  http_method = aws_api_gateway_method.feedback_bike_options.http_method
+  status_code = aws_api_gateway_method_response.feedback_bike_options.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
+# ===== DEPLOYMENT =====
+
 # Deployment
 resource "aws_api_gateway_deployment" "bike_api" {
   depends_on = [
@@ -343,14 +546,22 @@ resource "aws_api_gateway_deployment" "bike_api" {
     aws_api_gateway_integration.update_bike,
     aws_api_gateway_integration.delete_bike,
     aws_api_gateway_integration.get_public_bikes,
+    aws_api_gateway_integration.submit_feedback,
+    aws_api_gateway_integration.get_feedback,
+    aws_api_gateway_integration.get_bike_feedback,
     aws_api_gateway_integration_response.bikes_options,
     aws_api_gateway_integration_response.bike_id_options,
     aws_api_gateway_integration_response.public_bikes_options,
+    aws_api_gateway_integration_response.feedback_options,
+    aws_api_gateway_integration_response.feedback_bike_options,
     aws_api_gateway_method_response.create_bike,
     aws_api_gateway_method_response.get_bikes,
     aws_api_gateway_method_response.update_bike,
     aws_api_gateway_method_response.delete_bike,
-    aws_api_gateway_method_response.get_public_bikes
+    aws_api_gateway_method_response.get_public_bikes,
+    aws_api_gateway_method_response.submit_feedback,
+    aws_api_gateway_method_response.get_feedback,
+    aws_api_gateway_method_response.get_bike_feedback
   ]
 
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
@@ -360,16 +571,24 @@ resource "aws_api_gateway_deployment" "bike_api" {
       aws_api_gateway_resource.bikes.id,
       aws_api_gateway_resource.bike_id.id,
       aws_api_gateway_resource.public_bikes.id,
+      aws_api_gateway_resource.feedback.id,
+      aws_api_gateway_resource.feedback_bike.id,
       aws_api_gateway_method.create_bike.id,
       aws_api_gateway_method.get_bikes.id,
       aws_api_gateway_method.update_bike.id,
       aws_api_gateway_method.delete_bike.id,
       aws_api_gateway_method.get_public_bikes.id,
+      aws_api_gateway_method.submit_feedback.id,
+      aws_api_gateway_method.get_feedback.id,
+      aws_api_gateway_method.get_bike_feedback.id,
       aws_api_gateway_integration.create_bike.id,
       aws_api_gateway_integration.get_bikes.id,
       aws_api_gateway_integration.update_bike.id,
       aws_api_gateway_integration.delete_bike.id,
       aws_api_gateway_integration.get_public_bikes.id,
+      aws_api_gateway_integration.submit_feedback.id,
+      aws_api_gateway_integration.get_feedback.id,
+      aws_api_gateway_integration.get_bike_feedback.id,
       aws_api_gateway_authorizer.cognito_authorizer.id,
     ]))
   }
@@ -386,6 +605,8 @@ resource "aws_api_gateway_stage" "bike_api_stage" {
 
   xray_tracing_enabled = true
 }
+
+# ===== LAMBDA PERMISSIONS =====
 
 # Lambda permissions for API Gateway
 resource "aws_lambda_permission" "api_gateway_lambda" {
@@ -405,8 +626,21 @@ resource "aws_lambda_permission" "api_gateway_public_bikes" {
   source_arn    = "${aws_api_gateway_rest_api.bike_api.execution_arn}/*/*"
 }
 
+# Lambda permissions for feedback API
+resource "aws_lambda_permission" "feedback_api_gateway_lambda" {
+  statement_id  = "AllowExecutionFromAPIGatewayFeedback"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["feedback_management"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.bike_api.execution_arn}/*/*"
+}
+
+# ===== DATA SOURCES =====
+
 # Data source for current region (fix for deprecated warning)
 data "aws_region" "current" {}
+
+# ===== OUTPUTS =====
 
 # Outputs with fixed region reference
 output "bike_api_url" {
@@ -417,11 +651,23 @@ output "bike_api_url" {
 output "api_endpoints" {
   description = "Available API endpoints"
   value = {
-    "Create Bike"    = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes"
-    "List Bikes"     = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes"
-    "Public Bikes"   = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/public-bikes"
-    "Update Bike"    = "PUT https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes/{bike_id}"
-    "Delete Bike"    = "DELETE https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes/{bike_id}"
+    "Create Bike"      = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes"
+    "List Bikes"       = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes"
+    "Public Bikes"     = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/public-bikes"
+    "Update Bike"      = "PUT https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes/{bike_id}"
+    "Delete Bike"      = "DELETE https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/bikes/{bike_id}"
+    "Submit Feedback"  = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback"
+    "Get All Feedback" = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback"
+    "Get Bike Feedback" = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback/{bike_id}"
+  }
+}
+
+output "feedback_api_endpoints" {
+  description = "Feedback API endpoints with sentiment analysis"
+  value = {
+    "Submit Feedback"   = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback (Auth Required)"
+    "Get All Feedback"  = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback (Public)"
+    "Get Bike Feedback" = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback/{bike_id} (Public)"
   }
 }
 

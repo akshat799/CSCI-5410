@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
 
+
 function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -22,7 +23,7 @@ function HomePage() {
     setError('');
     try {
       const filters = {
-        status: 'available', // Only show available bikes
+        status: 'available', 
         ...(filterType && { type: filterType })
       };
       

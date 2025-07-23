@@ -1,6 +1,5 @@
 import json
 import boto3
-from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('Availability')
@@ -10,7 +9,7 @@ def lambda_handler(event, context):
     print("Authorization Header:", auth_header)
 
     try:
-        body = json.loads(event['body']) if 'body' in event else event
+        body = json.loads(event.get('body', '{}'))
 
         scooter_id = body.get("scooterId")
         date = body.get("date")
@@ -19,15 +18,17 @@ def lambda_handler(event, context):
         if not (scooter_id and date and isinstance(updated_slots, list)):
             return {
                 "statusCode": 400,
-                "body": json.loads(json.dumps({"error": "Missing or invalid input fields"}))
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Missing or invalid input fields"})
             }
 
-        # Check if the item exists
+        # Check if item exists
         existing = table.get_item(Key={"scooterId": scooter_id, "date": date})
         if "Item" not in existing:
             return {
                 "statusCode": 404,
-                "body": json.loads(json.dumps({"error": "Availability record not found"}))
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Availability record not found"})
             }
 
         # Update the slots
@@ -39,11 +40,13 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "body": json.loads(json.dumps({"message": "Availability updated successfully"}))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"message": "Availability updated successfully"})
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.loads(json.dumps({"error": str(e)}))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
         }

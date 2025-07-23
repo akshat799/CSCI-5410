@@ -29,19 +29,23 @@ def lambda_handler(event, context):
         response = table.scan(**scan_args)
         items = response.get("Items", [])
 
+
         if not items:
             return {
                 "statusCode": 404,
-                "body": json.loads(json.dumps({"error": "No availability found for the given criteria."}))
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "No availability found for the given criteria."})
             }
 
         return {
             "statusCode": 200,
-            "body": json.loads(json.dumps(items))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps(items)
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.loads(json.dumps({"error": str(e)}))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
         }

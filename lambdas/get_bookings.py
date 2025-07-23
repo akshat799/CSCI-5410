@@ -28,11 +28,13 @@ def lambda_handler(event, context):
             if not item:
                 return {
                     "statusCode": 404,
-                    "body": json.loads(json.dumps({"error": "Booking not found"}))
+                    "headers": {"Content-Type": "application/json"},
+                    "body": json.dumps({"error": "Booking not found"})
                 }
             return {
                 "statusCode": 200,
-                "body": json.loads(json.dumps(item, default=decimal_default))
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps(item, default=decimal_default)
             }
 
         # Otherwise, use scan with filters
@@ -51,15 +53,16 @@ def lambda_handler(event, context):
 
         response = bookings_table.scan(**scan_args)
         items = response.get("Items", [])
-        clean_items = json.loads(json.dumps(items, default=decimal_default))
 
         return {
             "statusCode": 200,
-            "body": json.loads(json.dumps(clean_items))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps(items)
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.loads(json.dumps({"error": str(e)}))
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
         }

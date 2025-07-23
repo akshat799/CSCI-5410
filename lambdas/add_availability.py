@@ -11,6 +11,7 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event.get('body', '{}'))
         scooter_id = body['scooterId']
+        scooter_type = body['scooterType']
         date = body['date']
         slots = body['slots']
 
@@ -24,6 +25,7 @@ def lambda_handler(event, context):
         table.put_item(
             Item={
                 'scooterId': scooter_id,
+                'scooterType':scooter_type,
                 'date': date,
                 'slots': slots
             }
@@ -32,7 +34,7 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"message": "Slot added successfully"})
+            "body": json.dumps({"message": "Slots added successfully"})
         }
 
     except Exception as e:

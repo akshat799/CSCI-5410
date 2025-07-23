@@ -1,32 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
-/* Override default button styles */
-button {
-  font-family: inherit;
-}
-
-/* Custom component styles */
-@layer components {
-  .container {
-    @apply max-width: 1200px mx-auto px-4;
-  }
-  
-  .btn-primary {
-    @apply bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors;
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 transition-colors;
-  }
-  
-  .error {
-    @apply text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm;
-  }
-}
-
 body {
   margin: 0;
   padding: 0;

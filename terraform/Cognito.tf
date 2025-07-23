@@ -10,24 +10,56 @@ resource "aws_cognito_user_pool" "main" {
 
   auto_verified_attributes = ["email"]
 
-  # Only declare one minimal field to avoid schema update error
   schema {
-    name                = "email"
+    name = "email"
+    required = true
     attribute_data_type = "String"
-    required            = true
-    mutable             = true
   }
 
-  lifecycle {
-    ignore_changes = [schema]
+  schema {
+    name = "secQuestion"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
+
+  schema {
+    name = "secAnswer"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
+
+  schema {
+    name = "role"
+    attribute_data_type = "String"
+    mutable = true
+  }
+
+  schema {
+    name = "caesarText"
+    attribute_data_type = "String"
+    mutable = true
+  }
+  schema {
+    name = "shiftKey"
+    attribute_data_type = "Number"
+    required = false
+    mutable = true
   }
 
   password_policy {
-    minimum_length    = 8
+    minimum_length = 8
     require_lowercase = true
     require_uppercase = true
-    require_numbers   = true
-    require_symbols   = false
+    require_numbers = true
+    require_symbols = false
   }
 }
 
@@ -38,9 +70,8 @@ resource "aws_lambda_permission" "allow_cognito_post_confirmation" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }
-
 resource "aws_cognito_user_pool_client" "client" {
-  name         = "UserPoolClient"
+  name = "UserPoolClient"
   user_pool_id = aws_cognito_user_pool.main.id
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
@@ -73,7 +104,6 @@ resource "aws_lambda_permission" "allow_cognito_verify" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }
-
 resource "aws_cognito_user_group" "registered_customer" {
   name         = "RegisteredCustomer"
   user_pool_id = aws_cognito_user_pool.main.id

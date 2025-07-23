@@ -14,6 +14,7 @@ def lambda_handler(event, context):
         scooter_type = body['scooterType']
         date = body['date']
         slots = body['slots']
+        # slots would contain startTime, endTime, location
 
         if not isinstance(slots, list):
             return {

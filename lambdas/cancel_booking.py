@@ -45,7 +45,8 @@ def lambda_handler(event, context):
         date = booking_item["date"]
         restored_slot = {
             "startTime": booking_item["startTime"],
-            "endTime": booking_item["endTime"]
+            "endTime": booking_item["endTime"],
+            "location": booking_item["location"]
         }
 
         availability = availability_table.get_item(Key={"scooterId": scooter_id, "date": date})

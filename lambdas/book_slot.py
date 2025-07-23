@@ -15,12 +15,14 @@ def lambda_handler(event, context):
         body = json.loads(event.get('body', '{}'))
 
         scooter_id = body["scooterId"]
+        scooter_type = body["scooterType"]
         user_id = body["userId"]
         date = body["date"]
         start_time = body["startTime"]
         end_time = body["endTime"]
+        location = body["location"]
 
-        requested_slot = {"startTime": start_time, "endTime": end_time}
+        requested_slot = {"startTime": start_time, "endTime": end_time, "location":location}
 
         # 1. Fetch availability
         response = availability_table.get_item(
@@ -65,17 +67,19 @@ def lambda_handler(event, context):
             Item={
                 "bookingReference": booking_id,
                 "scooterId": scooter_id,
+                "scooterType": scooter_type,
                 "userId": user_id,
                 "date": date,
                 "startTime": start_time,
                 "endTime": end_time,
+                "location": location,
                 "status": "booked"
             }
         )
 
         # 4. Remove booked slot from availability
         updated_slots = [slot for slot in slots if not (
-            slot["startTime"] == start_time and slot["endTime"] == end_time
+            slot["startTime"] == start_time and slot["endTime"] == end_time and slot["location"] == location
         )]
 
         availability_table.update_item(

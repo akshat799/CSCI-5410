@@ -72,6 +72,7 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'headers': {
                     'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': '*',
                     'Content-Type': 'application/json'
                 },
                 'body': json.dumps({'message': 'Invalid request'})
@@ -83,6 +84,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
                 'Content-Type': 'application/json'
             },
             'body': json.dumps({'message': f'Error: {str(e)}'})
@@ -113,6 +115,7 @@ def create_bike(bike_data):
         'statusCode': 201,
         'headers': {
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
             'Content-Type': 'application/json'
         },
         'body': json.dumps({
@@ -149,6 +152,7 @@ def update_bike(bike_id, update_data):
         'statusCode': 200,
         'headers': {
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
             'Content-Type': 'application/json'
         },
         'body': json.dumps({'message': 'Bike updated successfully'})
@@ -199,6 +203,7 @@ def delete_bike(bike_id):
         'statusCode': 200,
         'headers': {
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
             'Content-Type': 'application/json'
         },
         'body': json.dumps({'message': 'Bike deleted successfully'})

@@ -46,7 +46,7 @@ def lambda_handler(event, context):
         'secAnswer':   attrs.get('custom:secAnswer', '').strip().lower()
     })
 
-    plain_text = attrs.get('custom:plainText', 'default')
+    plain_text = attrs.get('custom:caesarText', 'default')
     try:
         shift = int(attrs.get('custom:shiftKey', 0))
     except (TypeError, ValueError):
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
     challenge_text = apply_caesar_cipher(plain_text, shift)
     caesar_table.put_item(Item={
         'user_id':       user_id,
-        'plainText':     plain_text,
+        'caesarText':     plain_text,
         'shift':         shift,
         'challengeText': challenge_text
     })

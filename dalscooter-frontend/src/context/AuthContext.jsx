@@ -26,59 +26,22 @@ export function AuthProvider({ children }) {
   };
 
   // Helper function to get user role from token
-  const getUserRole = (session) => {
+  // 
+  
+  const extractGroups = (session) => {
     try {
       const idToken = session.getIdToken().getJwtToken();
-      console.log('ID Token:', idToken); // Debug log
-      
-      // Fix: Handle URL encoding in JWT token
-      const parts = idToken.split('.');
-      if (parts.length !== 3) {
-        console.error('Invalid JWT token format');
-        return 'RegisteredCustomer';
-      }
-      
-      // Decode the payload with proper base64 padding
-      let payload = parts[1];
-      // Add padding if necessary
-      while (payload.length % 4) {
-        payload += '=';
-      }
-      
-      const decodedPayload = JSON.parse(atob(payload));
-      console.log('Token payload:', decodedPayload); // Debug log
-      
-      const groups = decodedPayload['cognito:groups'];
-      console.log('Groups from token:', groups); // Debug log
-      
-      if (Array.isArray(groups)) {
-        if (groups.includes('FranchiseOperator')) {
-          return 'FranchiseOperator';
-        } else if (groups.includes('RegisteredCustomer')) {
-          return 'RegisteredCustomer';
-        }
-      } else if (typeof groups === 'string') {
-        if (groups === 'FranchiseOperator') {
-          return 'FranchiseOperator';
-        } else if (groups === 'RegisteredCustomer') {
-          return 'RegisteredCustomer';
-        }
-      }
-      
-      // Also check custom:role as fallback
-      const customRole = decodedPayload['custom:role'];
-      console.log('Custom role:', customRole); // Debug log
-      
-      if (customRole === 'FranchiseOperator') {
-        return 'FranchiseOperator';
-      }
-      
-      return 'RegisteredCustomer'; // Default
+      const payload = idToken.split('.')[1];
+      const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4);
+      const decoded = JSON.parse(atob(padded));
+      const groups = decoded['cognito:groups'] || [];
+      return Array.isArray(groups) ? groups : [groups];
     } catch (error) {
-      console.error('Error parsing token:', error);
-      return 'RegisteredCustomer';
+      console.error("Error extracting groups from token:", error);
+      return [];
     }
   };
+
 
   const register = ({ name, email, password, question, answer, role, caesarText, shiftKey }) => {
 
@@ -90,7 +53,7 @@ export function AuthProvider({ children }) {
         new CognitoUserAttribute({ Name: 'custom:secQuestion',Value: question }),
         new CognitoUserAttribute({ Name: 'custom:secAnswer',  Value: answer }),
         new CognitoUserAttribute({ Name: 'custom:role',      Value: role }),
-        new CognitoUserAttribute({ Name: 'custom:plainText', Value: caesarText }),
+        new CognitoUserAttribute({ Name: 'custom:caesarText', Value: caesarText }),
         new CognitoUserAttribute({ Name: 'custom:shiftKey',   Value: shiftKey })
       ];
       userPool.signUp(email, password, attrs, null, (err, result) => {
@@ -132,20 +95,33 @@ export function AuthProvider({ children }) {
 
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: session => {
-        const detectedRole = getUserRole(session);
+        // const detectedRole = getUserRole(session);
+        // const usr = { 
+        //   email, 
+        //   session, 
+        //   role: detectedRole,
+        //   selectedRole: role, // Store both detected and selected role
+        //   idToken: session.getIdToken().getJwtToken(),
+        //   accessToken: session.getAccessToken().getJwtToken(),
+        //   refreshToken: session.getRefreshToken().getToken()
+        // };
+
+        const groups = extractGroups(session);
         const usr = { 
-          email, 
-          session, 
-          role: detectedRole,
-          selectedRole: role, // Store both detected and selected role
+          email,
+          session,
+          groups,
           idToken: session.getIdToken().getJwtToken(),
           accessToken: session.getAccessToken().getJwtToken(),
           refreshToken: session.getRefreshToken().getToken()
         };
+
+
         setUser(usr);
         localStorage.setItem('user', JSON.stringify(usr));
         clearChallengeParams();
-        res({ success: true, role: detectedRole, selectedRole: role });
+        res(true);
+        // res({ success: true, role: detectedRole, selectedRole: role });
       },
       onFailure: err => rej(err),
       customChallenge: params => {
@@ -169,20 +145,32 @@ export function AuthProvider({ children }) {
       pendingUser.sendCustomChallengeAnswer(ans, {
         onSuccess: session => {
           const username = pendingUser.getUsername();
-          const detectedRole = getUserRole(session);
+          // const detectedRole = getUserRole(session);
+          // const usr = { 
+          //   email: username, 
+          //   session, 
+          //   role: detectedRole,
+          //   selectedRole: selectedRole, // Use stored selected role
+          //   idToken: session.getIdToken().getJwtToken(),
+          //   accessToken: session.getAccessToken().getJwtToken(),
+          //   refreshToken: session.getRefreshToken().getToken()
+          // };
+
+          const groups = extractGroups(session);
           const usr = { 
-            email: username, 
-            session, 
-            role: detectedRole,
-            selectedRole: selectedRole, // Use stored selected role
+            email: username,
+            session,
+            groups,
             idToken: session.getIdToken().getJwtToken(),
             accessToken: session.getAccessToken().getJwtToken(),
             refreshToken: session.getRefreshToken().getToken()
           };
+
           setUser(usr);
           localStorage.setItem('user', JSON.stringify(usr));
           clearChallengeParams();
-          res({ success: true, role: detectedRole, selectedRole: selectedRole }); 
+          res(true);
+          // res({ success: true, role: detectedRole, selectedRole: selectedRole }); 
         },
         onFailure: err => rej(err),
         customChallenge: (params) => {
@@ -213,7 +201,7 @@ export function AuthProvider({ children }) {
       logout,
       challengeParams,
       clearChallengeParams,
-      getUserRole,
+      // getUserRole,
       selectedRole
     }}>
       {children}

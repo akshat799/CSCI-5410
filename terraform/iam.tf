@@ -72,3 +72,75 @@ resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "lambda_bikes_table_access" {
+  name = "LambdaBikesTableAccess"
+  role = aws_iam_role.lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Resource = [
+          aws_dynamodb_table.bikes.arn,
+          "${aws_dynamodb_table.bikes.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_feedback_table_access" {
+  name = "LambdaFeedbackTableAccess"
+  role = aws_iam_role.lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Resource = [
+          aws_dynamodb_table.feedback.arn,
+          "${aws_dynamodb_table.feedback.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_comprehend_access" {
+  name = "LambdaComprehendAccess"
+  role = aws_iam_role.lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "comprehend:DetectSentiment",
+          "comprehend:DetectKeyPhrases",
+          "comprehend:DetectEntities"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}

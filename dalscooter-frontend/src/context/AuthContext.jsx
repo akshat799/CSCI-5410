@@ -95,16 +95,6 @@ export function AuthProvider({ children }) {
 
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: session => {
-        // const detectedRole = getUserRole(session);
-        // const usr = { 
-        //   email, 
-        //   session, 
-        //   role: detectedRole,
-        //   selectedRole: role, // Store both detected and selected role
-        //   idToken: session.getIdToken().getJwtToken(),
-        //   accessToken: session.getAccessToken().getJwtToken(),
-        //   refreshToken: session.getRefreshToken().getToken()
-        // };
 
         const groups = extractGroups(session);
         const usr = { 
@@ -121,7 +111,6 @@ export function AuthProvider({ children }) {
         localStorage.setItem('user', JSON.stringify(usr));
         clearChallengeParams();
         res(true);
-        // res({ success: true, role: detectedRole, selectedRole: role });
       },
       onFailure: err => rej(err),
       customChallenge: params => {
@@ -145,16 +134,6 @@ export function AuthProvider({ children }) {
       pendingUser.sendCustomChallengeAnswer(ans, {
         onSuccess: session => {
           const username = pendingUser.getUsername();
-          // const detectedRole = getUserRole(session);
-          // const usr = { 
-          //   email: username, 
-          //   session, 
-          //   role: detectedRole,
-          //   selectedRole: selectedRole, // Use stored selected role
-          //   idToken: session.getIdToken().getJwtToken(),
-          //   accessToken: session.getAccessToken().getJwtToken(),
-          //   refreshToken: session.getRefreshToken().getToken()
-          // };
 
           const groups = extractGroups(session);
           const usr = { 
@@ -170,7 +149,6 @@ export function AuthProvider({ children }) {
           localStorage.setItem('user', JSON.stringify(usr));
           clearChallengeParams();
           res(true);
-          // res({ success: true, role: detectedRole, selectedRole: selectedRole }); 
         },
         onFailure: err => rej(err),
         customChallenge: (params) => {
@@ -201,7 +179,6 @@ export function AuthProvider({ children }) {
       logout,
       challengeParams,
       clearChallengeParams,
-      // getUserRole,
       selectedRole
     }}>
       {children}

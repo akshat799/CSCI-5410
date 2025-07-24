@@ -23,10 +23,7 @@ def lambda_handler(event, context):
     if not any(group in allowed_groups for group in user_groups):
         return {
             "statusCode": 403,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Content-Type": "application/json"
-            },
+            'headers': cors_headers(),
             "body": json.dumps({"message": "Access Denied", "user_groups": user_groups})
         }
 
@@ -46,12 +43,12 @@ def lambda_handler(event, context):
             if not item:
                 return {
                     "statusCode": 404,
-                    "headers": {"Content-Type": "application/json"},
+                    'headers': cors_headers(),
                     "body": json.dumps({"error": "Booking not found"})
                 }
             return {
                 "statusCode": 200,
-                "headers": {"Content-Type": "application/json"},
+                'headers': cors_headers(),
                 "body": json.dumps(item, default=decimal_default)
             }
 
@@ -74,13 +71,21 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps(items)
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps({"error": str(e)})
         }
+    
+def cors_headers():
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Content-Type': 'application/json'
+    }

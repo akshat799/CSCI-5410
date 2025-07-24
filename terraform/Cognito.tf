@@ -14,49 +14,49 @@ resource "aws_cognito_user_pool" "main" {
 
   auto_verified_attributes = ["email"]
 
-#  schema {
-#    name = "email"
-#    required = true
-#    attribute_data_type = "String"
-#  }
+  schema {
+    name = "email"
+    required = true
+    attribute_data_type = "String"
+  }
 
-#  schema {
-#    name = "secQuestion"
-#    attribute_data_type = "String"
-#    mutable = true
-#    string_attribute_constraints {
-#      min_length = 1
-#      max_length = 256
-#    }
-#  }
+  schema {
+    name = "secQuestion"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
 
-#  schema {
-#    name = "secAnswer"
-#    attribute_data_type = "String"
-#    mutable = true
-#    string_attribute_constraints {
-#      min_length = 1
-#      max_length = 256
-#    }
-#  }
+  schema {
+    name = "secAnswer"
+    attribute_data_type = "String"
+    mutable = true
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
 
-#  schema {
-#    name = "role"
-#    attribute_data_type = "String"
-#    mutable = true
-#  }
+  schema {
+    name = "role"
+    attribute_data_type = "String"
+    mutable = true
+  }
 
-#  schema {
-#    name = "caesarText"
-#    attribute_data_type = "String"
-#    mutable = true
-#  }
-#  schema {
-#    name = "shiftKey"
-#    attribute_data_type = "Number"
-#    required = false
-#    mutable = true
-#  }
+  schema {
+    name = "caesarText"
+    attribute_data_type = "String"
+    mutable = true
+  }
+  schema {
+    name = "shiftKey"
+    attribute_data_type = "Number"
+    required = false
+    mutable = true
+  }
 
   password_policy {
     minimum_length = 8

@@ -799,7 +799,7 @@ function FranchiseDashboard() {
                         Delete
                       </button>
                       <button onClick={() => {
-                          setLatestScooterId(bike.access_code);
+                          setLatestScooterId(bike.bike_id);
                           setShowAvailabilityModal(true);
                         }} className="flex items-center gap-1 flex-1 justify-center px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
                         <Plus className="w-4 h-4" />
@@ -816,7 +816,7 @@ function FranchiseDashboard() {
       </div>
       {showAvailabilityModal && (
         <AddAvailabilityModal
-          scooterId={latestScooterId}
+          bikeId={latestScooterId}
           onClose={() => setShowAvailabilityModal(false)}
           onSuccess={() => {
             setShowAvailabilityModal(false);

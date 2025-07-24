@@ -16,10 +16,7 @@ def lambda_handler(event, context):
     if not any(group in allowed_groups for group in user_groups):
         return {
             "statusCode": 403,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Content-Type": "application/json"
-            },
+            'headers': cors_headers(),
             "body": json.dumps({"message": "Access Denied", "user_groups": user_groups})
         }
 
@@ -36,7 +33,7 @@ def lambda_handler(event, context):
         if not (scooter_id and date and isinstance(updated_slots, list)):
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                'headers': cors_headers(),
                 "body": json.dumps({"error": "Missing or invalid input fields"})
             }
 
@@ -45,7 +42,7 @@ def lambda_handler(event, context):
         if "Item" not in existing:
             return {
                 "statusCode": 404,
-                "headers": {"Content-Type": "application/json"},
+                'headers': cors_headers(),
                 "body": json.dumps({"error": "Availability record not found"})
             }
 
@@ -58,13 +55,22 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps({"message": "Availability updated successfully"})
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps({"error": str(e)})
         }
+
+
+def cors_headers():
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Content-Type': 'application/json'
+    }

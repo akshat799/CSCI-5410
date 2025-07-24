@@ -19,10 +19,7 @@ def lambda_handler(event, context):
     if not any(group in allowed_groups for group in user_groups):
         return {
             "statusCode": 403,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Content-Type": "application/json"
-            },
+            'headers': cors_headers(),
             "body": json.dumps({"message": "Access Denied", "user_groups": user_groups})
         }
 
@@ -49,7 +46,7 @@ def lambda_handler(event, context):
         if "Item" not in response:
             return {
                 "statusCode": 404,
-                "headers": {"Content-Type": "application/json"},
+                'headers': cors_headers(),
                 "body": json.dumps({"error": "No availability found"})
             }
 
@@ -58,7 +55,7 @@ def lambda_handler(event, context):
         if requested_slot not in slots:
             return {
                 "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
+                'headers': cors_headers(),
                 "body": json.dumps({"error": "Slot not available"})
             }
 
@@ -75,7 +72,7 @@ def lambda_handler(event, context):
             if not (end_time <= booked_start or start_time >= booked_end):
                 return {
                     "statusCode": 409,
-                    "headers": {"Content-Type": "application/json"},
+                    'headers': cors_headers(),
                     "body": json.dumps({"error": "Slot already booked"})
                 }
 
@@ -108,7 +105,7 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps({
                 "message": "Slot booked successfully",
                 "bookingReference": booking_id
@@ -118,6 +115,14 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
+            'headers': cors_headers(),
             "body": json.dumps({"error": str(e)})
         }
+    
+def cors_headers():
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        'Content-Type': 'application/json'
+    }

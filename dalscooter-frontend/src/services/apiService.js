@@ -2,25 +2,24 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getAuthHeaders = () => {
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
-  console.log(user)
-  
-  // Try different token sources for compatibility
+  console.log("User from localStorage:", user);
+
   let token = null;
-  
-  if (user?.idToken) {
-    token = user.idToken;
-  } else if (user?.session?.idToken) {
-    token = user.session.idToken;
-  } else if (user?.session?.getIdToken) {
-    try {
-      token = user.session.getIdToken().getJwtToken();
-    } catch (error) {
-      console.error('Error getting ID token from session:', error);
+
+  try {
+    if (user?.session?.getIdToken) {
+      token = user.session.getIdToken().getJwtToken(); // safest
+    } else if (user?.session?.idToken?.jwtToken) {
+      token = user.session.idToken.jwtToken;
+    } else if (user?.idToken) {
+      token = user.idToken;
     }
+  } catch (error) {
+    console.error("Error extracting ID token:", error);
   }
-  
+
   console.log('Using token for API calls:', token ? 'Token found' : 'No token found');
-  
+
   return {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` })

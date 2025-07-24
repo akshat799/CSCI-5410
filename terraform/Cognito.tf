@@ -1,97 +1,62 @@
 resource "aws_cognito_user_pool" "main" {
   name = "UserPool"
 
+  lifecycle {
+    ignore_changes = [schema]
+  }
+
   lambda_config {
     define_auth_challenge          = aws_lambda_function.lambda["define_auth"].arn
     create_auth_challenge          = aws_lambda_function.lambda["create_auth"].arn
     verify_auth_challenge_response = aws_lambda_function.lambda["verify_auth"].arn
-<<<<<<< HEAD
     post_confirmation              = aws_lambda_function.lambda["post_confirmation"].arn
-=======
-    post_confirmation = aws_lambda_function.lambda["post_confirmation"].arn
->>>>>>> upstream/main
   }
 
   auto_verified_attributes = ["email"]
 
-  schema {
-<<<<<<< HEAD
-    name                = "email"
-    required            = true
-=======
-    name = "email"
-    required = true
->>>>>>> upstream/main
-    attribute_data_type = "String"
-  }
+#  schema {
+#    name = "email"
+#    required = true
+#    attribute_data_type = "String"
+#  }
 
-  schema {
-<<<<<<< HEAD
-    name                = "secQuestion"
-    attribute_data_type = "String"
-    mutable             = true
-=======
-    name = "secQuestion"
-    attribute_data_type = "String"
-    mutable = true
->>>>>>> upstream/main
-    string_attribute_constraints {
-      min_length = 1
-      max_length = 256
-    }
-  }
+#  schema {
+#    name = "secQuestion"
+#    attribute_data_type = "String"
+#    mutable = true
+#    string_attribute_constraints {
+#      min_length = 1
+#      max_length = 256
+#    }
+#  }
 
-  schema {
-<<<<<<< HEAD
-    name                = "secAnswer"
-    attribute_data_type = "String"
-    mutable             = true
-=======
-    name = "secAnswer"
-    attribute_data_type = "String"
-    mutable = true
->>>>>>> upstream/main
-    string_attribute_constraints {
-      min_length = 1
-      max_length = 256
-    }
-  }
+#  schema {
+#    name = "secAnswer"
+#    attribute_data_type = "String"
+#    mutable = true
+#    string_attribute_constraints {
+#      min_length = 1
+#      max_length = 256
+#    }
+#  }
 
-  schema {
-<<<<<<< HEAD
-    name                = "role"
-    attribute_data_type = "String"
-    mutable             = true
-  }
+#  schema {
+#    name = "role"
+#    attribute_data_type = "String"
+#    mutable = true
+#  }
 
-  schema {
-    name                = "caesarText"
-    attribute_data_type = "String"
-    mutable             = true
-  }
-  schema {
-    name                = "shiftKey"
-    attribute_data_type = "Number"
-    required            = false
-    mutable             = true
-=======
-    name = "role"
-    attribute_data_type = "String"
-    mutable = true
-  }
-
-  schema {
-    name = "caesarText"
-    attribute_data_type = "String"
-    mutable = true
-  }
-  schema {
-    name = "shiftKey"
-    attribute_data_type = "Number"
-    required = false
-    mutable = true
->>>>>>> upstream/main
-  }
+#  schema {
+#    name = "caesarText"
+#    attribute_data_type = "String"
+#    mutable = true
+#  }
+#  schema {
+#    name = "shiftKey"
+#    attribute_data_type = "Number"
+#    required = false
+#    mutable = true
+#  }
 
   password_policy {
     minimum_length = 8
@@ -103,20 +68,13 @@ resource "aws_cognito_user_pool" "main" {
 }
 
 resource "aws_lambda_permission" "allow_cognito_post_confirmation" {
-<<<<<<< HEAD
-  statement_id_prefix = "AllowExecutionFromCognitoPostConfirmation"
-  action              = "lambda:InvokeFunction"
-  function_name       = aws_lambda_function.lambda["post_confirmation"].function_name
-  principal           = "cognito-idp.amazonaws.com"
-  source_arn          = aws_cognito_user_pool.main.arn
-=======
   statement_id  = "AllowExecutionFromCognitoPostConfirmation"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda["post_confirmation"].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
->>>>>>> upstream/main
 }
+
 resource "aws_cognito_user_pool_client" "client" {
   name = "UserPoolClient"
   user_pool_id = aws_cognito_user_pool.main.id
@@ -151,36 +109,11 @@ resource "aws_lambda_permission" "allow_cognito_verify" {
   principal           = "cognito-idp.amazonaws.com"
   source_arn          = aws_cognito_user_pool.main.arn
 }
+
 resource "aws_cognito_user_group" "registered_customer" {
   name         = "RegisteredCustomer"
   user_pool_id = aws_cognito_user_pool.main.id
   description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"
-  precedence   = 50
-}
-
-resource "aws_cognito_user_group" "franchise_operator" {
-  name         = "FranchiseOperator"
-  user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Admin users—can add/update scooters, view all bookings, and communicate with customers"
-  precedence   = 10
-}
-resource "aws_cognito_user_group" "registered_customer" {
-  name         = "RegisteredCustomer"
-  user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"
-  precedence   = 50
-}
-
-resource "aws_cognito_user_group" "franchise_operator" {
-  name         = "FranchiseOperator"
-  user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Admin users—can add/update scooters, view all bookings, and communicate with customers"
-  precedence   = 10
-}
-resource "aws_cognito_user_group" "registered_customer" {
-  name         = "RegisteredCustomer"
-  user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Users who have signed up and passed MFA—can book e-bikes and use the virtual assistant"  
   precedence   = 50
 }
 

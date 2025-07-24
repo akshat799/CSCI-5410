@@ -1,104 +1,96 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { getAuthHeaders } from '../services/apiService';
+import BookingModal from '../components/BookingModal';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/booking/get`;
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-const AvailableSlotsPage = () => {
+function AvailableSlotsPage() {
+  const { user } = useAuth();
   const [slots, setSlots] = useState([]);
-  const [filteredSlots, setFilteredSlots] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedScooter, setSelectedScooter] = useState('all');
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [filterDate, setFilterDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('Fetching availability for date:', filterDate);
     fetchSlots();
-  }, []);
+  }, [filterDate]);
 
   const fetchSlots = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(API_URL);
-      const allSlots = response.data || [];
-
-      const flattened = allSlots.flatMap(item =>
-        item.slots.map(slot => ({
-          scooterId: item.scooterId,
-          date: item.date,
-          ...slot
-        }))
-      );
-
-      setSlots(flattened);
-      setFilteredSlots(flattened);
+      const res = await fetch(`${API_URL}/booking/get?date=${filterDate}`, {
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      console.log('Fetched slots:', data);
+      setSlots(data.slots || []);
     } catch (err) {
-      console.error('Error fetching availability:', err);
+      console.error('Error fetching slots:', err);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handleFilter = () => {
-    let result = [...slots];
-
-    if (selectedDate) {
-      result = result.filter(slot => slot.date === selectedDate);
-    }
-
-    if (selectedScooter !== 'all') {
-      result = result.filter(slot => slot.scooterId === selectedScooter);
-    }
-
-    setFilteredSlots(result);
-  };
-
-  const uniqueScooters = [...new Set(slots.map(slot => slot.scooterId))];
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Available Slots</h1>
+    <div className="p-6 max-w-5xl mx-auto bg-white rounded shadow">
+      <h1 className="text-2xl font-bold mb-4 text-dalscooter-green">Available Slots</h1>
 
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Filter by Date:</label>
         <input
           type="date"
-          value={selectedDate}
-          onChange={e => setSelectedDate(e.target.value)}
-          className="border p-2 rounded"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="p-2 border rounded w-full max-w-xs"
         />
-
-        <select
-          value={selectedScooter}
-          onChange={e => setSelectedScooter(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="all">All Scooters</option>
-          {uniqueScooters.map(id => (
-            <option key={id} value={id}>{id}</option>
-          ))}
-        </select>
-
-        <button
-          onClick={handleFilter}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Filter
-        </button>
       </div>
 
-      {filteredSlots.length === 0 ? (
-        <p>No available slots found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSlots.map((slot, index) => (
-            <div key={index} className="border p-4 rounded shadow">
-              <h2 className="text-lg font-semibold mb-2">Scooter: {slot.scooterId}</h2>
-              <p><strong>Date:</strong> {slot.date}</p>
-              <p><strong>Start:</strong> {slot.startTime}</p>
-              <p><strong>End:</strong> {slot.endTime}</p>
-              <button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                Book Slot
-              </button>
-            </div>
-          ))}
-        </div>
+      {loading && <p>Loading slots...</p>}
+
+      {!loading && slots.length === 0 && (
+        <p className="text-dalscooter-gray">No slots available for this date.</p>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        {slots.map((scooter, index) => (
+          <div key={index} className="border rounded p-4 shadow">
+            <h2 className="font-semibold text-lg mb-2">Scooter ID: {scooter.scooterId}</h2>
+            <p className="text-sm text-gray-600 mb-2">Date: {scooter.date}</p>
+            {scooter.slots?.length > 0 ? (
+              <ul className="space-y-2">
+                {scooter.slots.map((slot, i) => (
+                  <li key={i} className="flex justify-between items-center border-t pt-2">
+                    <span>{slot.startTime} - {slot.endTime}</span>
+                    <button
+                      onClick={() => setSelectedSlot({ ...slot, scooterId: scooter.scooterId, date: scooter.date })}
+                      className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                    >
+                      Book
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-dalscooter-gray">No time slots</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {selectedSlot && (
+        <BookingModal
+          slot={selectedSlot}
+          onClose={() => setSelectedSlot(null)}
+          onBooked={() => {
+            setSelectedSlot(null);
+            fetchSlots();
+          }}
+        />
       )}
     </div>
   );
-};
+}
 
 export default AvailableSlotsPage;

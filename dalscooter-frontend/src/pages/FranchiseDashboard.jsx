@@ -4,7 +4,9 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { apiService } from "../services/apiService"
-import Navbar from "../components/Navbar"
+import Navbar from "../components/NavBar"
+import AddAvailabilityModal from '../components/AddAvailabilityModal';
+
 import { Plus, Edit3, Trash2, Search, MapPin, DollarSign, Battery, Zap, Eye, RefreshCw } from "lucide-react"
 
 function FranchiseDashboard() {
@@ -18,6 +20,10 @@ function FranchiseDashboard() {
   const [success, setSuccess] = useState("")
   const [filterType, setFilterType] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [latestScooterId, setLatestScooterId] = useState('');
+
 
   const [bikeForm, setBikeForm] = useState({
     type: "eBike",
@@ -42,6 +48,7 @@ function FranchiseDashboard() {
     try {
       const filters = type ? { type } : {}
       const data = await apiService.getBikes(filters)
+      console.log("Fetched bikes from API:", data);
       setBikes(data.bikes || [])
     } catch (err) {
       setError("Error loading bikes: " + err.message)
@@ -63,6 +70,7 @@ function FranchiseDashboard() {
       }
 
       await apiService.createBike(bikeData)
+      
       setSuccess("Bike created successfully!")
       setShowAddForm(false)
       resetForm()
@@ -791,6 +799,14 @@ function FranchiseDashboard() {
                         <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
+                      <button onClick={() => {
+                          setLatestScooterId(bike.access_code);
+                          setShowAvailabilityModal(true);
+                        }} className="flex items-center gap-1 flex-1 justify-center px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                        <Plus className="w-4 h-4" />
+                          Add Availability
+                      </button>
+
                     </div>
                   </div>
                 ))}
@@ -799,8 +815,16 @@ function FranchiseDashboard() {
           </div>
         </div>
       </div>
+      {showAvailabilityModal && (
+        <AddAvailabilityModal
+          scooterId={latestScooterId}
+          onClose={() => setShowAvailabilityModal(false)}
+          onSuccess={() => {
+            setShowAvailabilityModal(false);
+            loadBikes(filterType);
+          }}  />
+      )}
     </>
-  )
-}
+  )}
 
 export default FranchiseDashboard

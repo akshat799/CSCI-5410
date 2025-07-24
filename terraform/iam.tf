@@ -22,53 +22,37 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_exec_mfa" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-<<<<<<< HEAD
-resource "aws_iam_role_policy_attachment" "lambda_basic_exec_mfa" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-=======
->>>>>>> upstream/main
 
 resource "aws_lambda_permission" "define_auth_permission" {
-  statement_id_prefix = "AllowCognitoDefineAuth"
-  action              = "lambda:InvokeFunction"
-  function_name       = aws_lambda_function.lambda["define_auth"].function_name
-  principal           = "cognito-idp.amazonaws.com"
-  source_arn          = aws_cognito_user_pool.main.arn
+  statement_id  = "AllowCognitoDefineAuth"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["define_auth"].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "create_auth_permission" {
-  statement_id_prefix = "AllowCognitoCreateAuth"
-  action              = "lambda:InvokeFunction"
-  function_name       = aws_lambda_function.lambda["create_auth"].function_name
-  principal           = "cognito-idp.amazonaws.com"
-  source_arn          = aws_cognito_user_pool.main.arn
+  statement_id  = "AllowCognitoCreateAuth"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["create_auth"].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "verify_auth_permission" {
-  statement_id_prefix = "AllowCognitoVerifyAuth"
-  action              = "lambda:InvokeFunction"
-  function_name       = aws_lambda_function.lambda["verify_auth"].function_name
-  principal           = "cognito-idp.amazonaws.com"
-  source_arn          = aws_cognito_user_pool.main.arn
+  statement_id  = "AllowCognitoVerifyAuth"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["verify_auth"].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
 }
 
 resource "aws_lambda_permission" "post_confirmation_permission" {
-<<<<<<< HEAD
-  statement_id_prefix = "AllowCognitoPostConfirmation"
-  action              = "lambda:InvokeFunction"
-  function_name       = aws_lambda_function.lambda["post_confirmation"].function_name
-  principal           = "cognito-idp.amazonaws.com"
-  source_arn          = aws_cognito_user_pool.main.arn
-=======
   statement_id  = "AllowCognitoPostConfirmation"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda["post_confirmation"].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
->>>>>>> upstream/main
 }
 
 resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
@@ -78,13 +62,8 @@ resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
     Version = "2012-10-17",
     Statement = [
       {
-<<<<<<< HEAD
-        Effect = "Allow",
-        Action = [
-=======
         Effect   = "Allow",
         Action   = [
->>>>>>> upstream/main
           "cognito-idp:AdminAddUserToGroup",
           "cognito-idp:AdminRemoveUserFromGroup"
         ],
@@ -92,8 +71,6 @@ resource "aws_iam_role_policy" "allow_admin_add_user_to_group" {
       }
     ]
   })
-<<<<<<< HEAD
-=======
 }
 
 resource "aws_iam_role_policy" "lambda_bikes_table_access" {
@@ -166,5 +143,4 @@ resource "aws_iam_role_policy" "lambda_comprehend_access" {
       }
     ]
   })
->>>>>>> upstream/main
 }

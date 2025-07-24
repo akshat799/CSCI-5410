@@ -1,19 +1,5 @@
 resource "aws_dynamodb_table" "users" {
   name         = "Users"
-<<<<<<< HEAD
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "user_id"
-
-  attribute {
-    name = "user_id"
-    type = "S"
-  }
-}
-
-resource "aws_dynamodb_table" "user_data" {
-  name         = "UserData"
-=======
->>>>>>> upstream/main
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "user_id"
 
@@ -109,4 +95,3 @@ resource "aws_dynamodb_table" "bikes" {
     projection_type = "ALL"
   }
 }
-

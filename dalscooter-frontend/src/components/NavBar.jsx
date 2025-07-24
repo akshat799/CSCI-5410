@@ -1,11 +1,7 @@
-<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Navbar.css";
-=======
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
->>>>>>> upstream/main
+
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -37,27 +33,26 @@ function Navbar() {
   };
 
   return (
-<<<<<<< HEAD
-    <nav className="nav-container">
-      <div className="nav-brand">
-        <Link to={getHomeLink()}>DALScooter</Link>
-      </div>
-      <div className="nav-links">
-        {!isLoggedIn ? (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
-          </>
-        ) : (
-          <>
-            <Link to={getHomeLink()}>{getProfileText()}</Link>
-            {user && (
-              <span className="text-sm text-gray-600 mr-2">
-                ({getRoleDisplay()})
-              </span>
-            )}
-            <a href="/" onClick={handleLogout}>Logout</a>
-=======
+    // <nav className="nav-container">
+    //   <div className="nav-brand">
+    //     <Link to={getHomeLink()}>DALScooter</Link>
+    //   </div>
+    //   <div className="nav-links">
+    //     {!isLoggedIn ? (
+    //       <>
+    //         <Link to="/login">Login</Link>
+    //         <Link to="/register">Register</Link>
+    //       </>
+    //     ) : (
+    //       <>
+    //         <Link to={getHomeLink()}>{getProfileText()}</Link>
+    //         {user && (
+    //           <span className="text-sm text-gray-600 mr-2">
+    //             ({getRoleDisplay()})
+    //           </span>
+    //         )}
+    //         <a href="/" onClick={handleLogout}>Logout</a>
+
     <nav className="bg-gray-50 px-8 py-4 flex justify-between items-center border-b border-gray-300 shadow-sm">
       <div>
         <Link 
@@ -113,7 +108,6 @@ function Navbar() {
             >
               Logout
             </button>
->>>>>>> upstream/main
           </>
         )}
       </div>

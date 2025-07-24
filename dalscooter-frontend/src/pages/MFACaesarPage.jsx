@@ -19,28 +19,102 @@ export default function MFACaesarPage() {
 
   const cipher = challengeParams?.ciphertext || '';
 
+  // Helper function to validate user's actual role
+  const validateUserRole = async () => {
+    try {
+      // Get the user's token to check their actual groups
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.idToken) {
+        // Decode the token to check groups
+        const parts = user.idToken.split('.');
+        if (parts.length === 3) {
+          let payload = parts[1];
+          // Add padding if necessary
+          while (payload.length % 4) {
+            payload += '=';
+          }
+          
+          const decodedPayload = JSON.parse(atob(payload));
+          const groups = decodedPayload['cognito:groups'];
+          const customRole = decodedPayload['custom:role'];
+          
+          console.log('User groups from token:', groups);
+          console.log('User custom role from token:', customRole);
+          
+          // Check if user is in FranchiseOperator group
+          if (Array.isArray(groups) && groups.includes('FranchiseOperator')) {
+            return 'FranchiseOperator';
+          } else if (customRole === 'FranchiseOperator') {
+            return 'FranchiseOperator';
+          }
+        }
+      }
+      return 'RegisteredCustomer';
+    } catch (error) {
+      console.error('Error validating user role:', error);
+      return 'RegisteredCustomer';
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const next = await respondChallenge({ answer });
-      console.log('Challenge response:', next);
-      if (next === null) {
-        navigate('/customer-home');
+      const result = await respondChallenge({ answer });
+      console.log('Caesar Challenge result:', result);
+      
+      if (result && result.success) {
+        // Get selected role and validate against actual role
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlRole = urlParams.get('role');
+        const storedRole = localStorage.getItem('pendingRole');
+        const selectedRole = urlRole || storedRole || 'RegisteredCustomer';
+        
+        // Validate user's actual role
+        const actualUserRole = await validateUserRole();
+        
+        console.log('Selected role:', selectedRole);
+        console.log('Actual user role:', actualUserRole);
+        
+        // Role validation
+        if (selectedRole === 'FranchiseOperator' && actualUserRole !== 'FranchiseOperator') {
+          setError('Access denied. You are not authorized as a Franchise Operator.');
+          localStorage.removeItem('pendingRole');
+          setTimeout(() => navigate('/login'), 3000);
+          return;
+        }
+        
+        if (selectedRole === 'RegisteredCustomer' && actualUserRole === 'FranchiseOperator') {
+          setError('You are a Franchise Operator. Please login again and select "Franchise Owner".');
+          localStorage.removeItem('pendingRole');
+          setTimeout(() => navigate('/login'), 3000);
+          return;
+        }
+        
+        // Role validation passed, redirect
+        if (selectedRole === 'FranchiseOperator') {
+          navigate('/franchise-dashboard');
+        } else {
+          navigate('/customer-home');
+        }
+        
+        // Clean up
+        localStorage.removeItem('pendingRole');
       } else {
         setError('Incorrect decryption. Redirecting to login...');
         setTimeout(() => {
-          clearChallengeParams ()
-          navigate('/Home')
-        },
-         5000);
+          clearChallengeParams();
+          localStorage.removeItem('pendingRole');
+          navigate('/login');
+        }, 5000);
       }
     } catch (err) {
       console.error(err);
       setError('Verification failed. Redirecting to login...');
       setTimeout(() =>{
         clearChallengeParams();
+        localStorage.removeItem('pendingRole');
         navigate('/login');
       }, 5000);
     } finally {

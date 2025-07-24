@@ -1,9 +1,20 @@
 locals {
   lambdas = {
+<<<<<<< HEAD
     define_auth       = "${path.module}/../lambda-functions/define_auth.py"
     create_auth       = "${path.module}/../lambda-functions/create_auth.py"
     verify_auth       = "${path.module}/../lambda-functions/verify_auth.py"
     post_confirmation = "${path.module}/../lambda-functions/post_confirmation.py"
+=======
+    define_auth           = "${path.module}/../lambda-functions/define_auth.py"
+    create_auth           = "${path.module}/../lambda-functions/create_auth.py"
+    verify_auth           = "${path.module}/../lambda-functions/verify_auth.py"
+    post_confirmation     = "${path.module}/../lambda-functions/post_confirmation.py"
+    notification_consumer = "${path.module}/../lambda-functions/notification_consumer.py"
+    bike_management       = "${path.module}/../lambda-functions/bike_management.py"  
+    get_bikes_public      = "${path.module}/../lambda-functions/get_bikes_public.py"
+    feedback_management   = "${path.module}/../lambda-functions/feedback_management.py"
+>>>>>>> upstream/main
   }
 }
 

@@ -46,7 +46,7 @@ def lambda_handler(event, context):
         'secAnswer':   attrs.get('custom:secAnswer', '').strip().lower()
     })
 
-    plain_text = attrs.get('custom:caesarText', 'default')
+    plain_text = attrs.get('custom:plainText', 'default')
     try:
         shift = int(attrs.get('custom:shiftKey', 0))
     except (TypeError, ValueError):

@@ -17,10 +17,12 @@ export const getAuthHeaders = () => {
 
   console.log('Using token for API calls:', token ? 'Token found' : 'No token found');
 
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
-  };
+  return token
+    ? {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      }
+    : { 'Content-Type': 'application/json' };
 };
 
 export const apiService = {
@@ -125,14 +127,43 @@ export const apiService = {
   },
 
   // Get availability
-  getAvailability: async (bikeId, date) => {
-    const query = new URLSearchParams({ bike_id: bikeId, date }).toString();
+  getAvailability: async (bikeId) => {
+    const query = new URLSearchParams({ bike_id: bikeId }).toString();
     const response = await fetch(`${BOOKING_API_URL}/availability?${query}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || `Get availability failed: ${response.status}`);
+    return data;
+  },
+
+  // Delete availability slot
+  deleteAvailability: async (slotId) => {
+    const query = new URLSearchParams({ slot_id: slotId }).toString();
+    const response = await fetch(`${BOOKING_API_URL}/availability?${query}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Delete availability failed: ${response.status}`);
+    return data;
+  },
+
+  // Update availability slot
+  updateAvailability: async (slotData) => {
+    const response = await fetch(`${BOOKING_API_URL}/availability`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        action: 'update',
+        slot_id: slotData.slot_id,
+        startTime: slotData.startTime,
+        endTime: slotData.endTime
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Update availability failed: ${response.status}`);
     return data;
   },
 
@@ -167,22 +198,6 @@ export const apiService = {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || `Get bookings failed: ${response.status}`);
-    return data;
-  },
-
-  // Update availability
-  updateAvailability: async (bikeId, slot) => {
-    const response = await fetch(`${BOOKING_API_URL}/availability`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        action: 'update',
-        bike_id: bikeId,
-        slot
-      })
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || `Update availability failed: ${response.status}`);
     return data;
   }
 };

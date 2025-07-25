@@ -5,8 +5,9 @@ import { useAuth } from "../context/AuthContext"
 import { apiService } from "../services/apiService"
 import Navbar from "../components/NavBar"
 import AddAvailabilityModal from '../components/AddAvailabilityModal';
+import ViewAvailabilityModal from '../components/ViewAvailabilityModal';
 
-import { Plus, Edit3, Trash2, Search, MapPin, DollarSign, Battery, Zap, Eye, RefreshCw } from "lucide-react"
+import { Plus, Edit3, Trash2, Search, MapPin, DollarSign, Battery, Zap, Eye, RefreshCw, Calendar } from "lucide-react"
 
 function FranchiseDashboard() {
   const { user } = useAuth()
@@ -22,7 +23,8 @@ function FranchiseDashboard() {
 
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [latestScooterId, setLatestScooterId] = useState('');
-
+  const [showViewAvailabilityModal, setShowViewAvailabilityModal] = useState(false)
+  const [selectedBikeId, setSelectedBikeId] = useState('')
 
   const [bikeForm, setBikeForm] = useState({
     type: "eBike",
@@ -805,6 +807,16 @@ function FranchiseDashboard() {
                         <Plus className="w-4 h-4" />
                           Add Availability
                       </button>
+                      <button
+                        onClick={() => {
+                          setSelectedBikeId(bike.bike_id);
+                          setShowViewAvailabilityModal(true);
+                        }}
+                        className="flex items-center gap-1 flex-1 justify-center px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        View Slots
+                      </button>
 
                     </div>
                   </div>
@@ -822,6 +834,12 @@ function FranchiseDashboard() {
             setShowAvailabilityModal(false);
             loadBikes(filterType);
           }}  />
+      )}
+      {showViewAvailabilityModal && (
+        <ViewAvailabilityModal
+          bikeId={selectedBikeId}
+          onClose={() => setShowViewAvailabilityModal(false)}
+        />
       )}
     </>
   )}

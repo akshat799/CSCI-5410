@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BOOKING_API_URL = import.meta.env.VITE_API_URL;
 
 export const getAuthHeaders = () => {
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
@@ -7,12 +8,8 @@ export const getAuthHeaders = () => {
   let token = null;
 
   try {
-    if (user?.session?.getIdToken) {
-      token = user.session.getIdToken().getJwtToken(); // safest
-    } else if (user?.session?.idToken?.jwtToken) {
-      token = user.session.idToken.jwtToken;
-    } else if (user?.idToken) {
-      token = user.idToken;
+    if (user?.idToken) {
+      token = user.idToken; // Use idToken directly from AuthContext
     }
   } catch (error) {
     console.error("Error extracting ID token:", error);
@@ -108,5 +105,84 @@ export const apiService = {
     }
     
     return response.json();
+  },
+
+
+  //Booking APIs
+  // Add availability
+  addAvailability: async (bikeId, slots) => {
+    const response = await fetch(`${BOOKING_API_URL}/availability`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        bike_id: bikeId,
+        slots
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Add availability failed: ${response.status}`);
+    return data;
+  },
+
+  // Get availability
+  getAvailability: async (bikeId, date) => {
+    const query = new URLSearchParams({ bike_id: bikeId, date }).toString();
+    const response = await fetch(`${BOOKING_API_URL}/availability?${query}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Get availability failed: ${response.status}`);
+    return data;
+  },
+
+  // Book a slot
+  bookSlot: async (bookingData) => {
+    const response = await fetch(`${BOOKING_API_URL}/bookings`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(bookingData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Booking failed: ${response.status}`);
+    return data;
+  },
+
+  // Cancel a booking
+  cancelBooking: async (bookingId) => {
+    const response = await fetch(`${BOOKING_API_URL}/bookings?booking_id=${bookingId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Cancel failed: ${response.status}`);
+    return data;
+  },
+
+  // Get bookings
+  getBookings: async () => {
+    const response = await fetch(`${BOOKING_API_URL}/bookings`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Get bookings failed: ${response.status}`);
+    return data;
+  },
+
+  // Update availability
+  updateAvailability: async (bikeId, slot) => {
+    const response = await fetch(`${BOOKING_API_URL}/availability`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        action: 'update',
+        bike_id: bikeId,
+        slot
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || `Update availability failed: ${response.status}`);
+    return data;
   }
 };

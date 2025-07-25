@@ -13,6 +13,10 @@ import "./index.css"
 import AvailableSlotsPage from './pages/AvailableSlotsPage';
 import BookingsPage from './pages/BookingsPage';
 import FranchiseAvailabilityDashboard from './pages/FranchiseAvailabilityDashboard';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
+
 
 function App() {
   return (

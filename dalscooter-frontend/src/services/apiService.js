@@ -157,6 +157,7 @@ export const apiService = {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         action: 'update',
+        bike_id: slotData.bike_id,
         slot_id: slotData.slot_id,
         startTime: slotData.startTime,
         endTime: slotData.endTime

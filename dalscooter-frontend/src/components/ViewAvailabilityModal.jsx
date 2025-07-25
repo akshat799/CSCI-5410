@@ -53,7 +53,7 @@ function ViewAvailabilityModal({ bikeId, onClose }) {
     setLoading(true);
     setError('');
     try {
-      await apiService.deleteAvailability(slotId);
+      await apiService.deleteAvailability(bikeId, slotId);
       await fetchSlots();
     } catch (err) {
       setError(err.message || 'Failed to delete slot');
@@ -90,6 +90,7 @@ function ViewAvailabilityModal({ bikeId, onClose }) {
     setError('');
     try {
       await apiService.updateAvailability({
+        bike_id: bikeId,
         slot_id: slotId,
         startTime: start.toISOString(),
         endTime: end.toISOString(),

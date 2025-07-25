@@ -2,7 +2,6 @@ import boto3
 import json
 import uuid
 from datetime import datetime
-from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 availability_table = dynamodb.Table('Availability')
@@ -15,7 +14,6 @@ def lambda_handler(event, context):
         user_groups = claims.get('cognito:groups', [])
         if isinstance(user_groups, str):
             user_groups = [user_groups] if user_groups else []
-        user_id = claims.get('sub')
 
         if 'RegisteredCustomer' not in user_groups:
             return {
@@ -31,6 +29,19 @@ def lambda_handler(event, context):
         body = json.loads(event.get('body', '{}'))
         bike_id = body.get('bike_id')
         slot_id = body.get('slot_id')
+        user_id = body.get('user_id')  # Use email from request body
+
+        # Validate input
+        if not all([bike_id, slot_id, user_id]):
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({'message': 'Missing required fields: bike_id, slot_id, user_id'})
+            }
 
         # Verify slot exists
         slot_response = availability_table.get_item(Key={'bike_id': bike_id, 'slot_id': slot_id})
@@ -50,7 +61,8 @@ def lambda_handler(event, context):
         booking_reference = f"BOOK{uuid.uuid4().hex[:8].upper()}"
         booking = {
             'booking_reference': booking_reference,
-            'user_id': user_id,
+            'user_id': user_id,  # Store email
+            'email': user_id,  # Store email for compatibility
             'bike_id': bike_id,
             'slot_id': slot_id,
             'startTime': slot['startTime'],

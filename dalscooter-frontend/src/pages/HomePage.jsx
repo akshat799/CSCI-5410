@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/NavBar';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
-
+import BookSlotModal from '../components/BookSlotModal';
+import ViewBookingsModal from '../components/ViewBookingsModal';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ function HomePage() {
   const [error, setError] = useState('');
   const [filterType, setFilterType] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [showBookingsModal, setShowBookingsModal] = useState(false);
+  const [selectedBikeId, setSelectedBikeId] = useState('');
 
   useEffect(() => {
     loadPublicBikes();
@@ -23,10 +27,9 @@ function HomePage() {
     setError('');
     try {
       const filters = {
-        status: 'available', 
-        ...(filterType && { type: filterType })
+        status: 'available',
+        ...(filterType && { type: filterType }),
       };
-      
       const data = await apiService.getPublicBikes(filters);
       setBikes(data.bikes || []);
     } catch (err) {
@@ -49,25 +52,23 @@ function HomePage() {
     }
   };
 
-  const handleBookNow = (bike) => {
+  const handleBookNow = (bikeId) => {
     if (!user) {
-      // Redirect to login if not authenticated
-      navigate('/login', { 
-        state: { 
+      navigate('/login', {
+        state: {
           message: 'Please login to book a bike',
           returnUrl: '/',
-          bikeId: bike.bike_id 
-        }
+          bikeId,
+        },
       });
     } else {
-      // Navigate to booking page or show booking modal
-      navigate('/book-bike', { state: { bike } });
+      setSelectedBikeId(bikeId);
+      setShowBookModal(true);
     }
   };
 
-  const filteredBikes = bikes.filter(bike => 
-    !searchLocation || 
-    bike.location.toLowerCase().includes(searchLocation.toLowerCase())
+  const filteredBikes = bikes.filter((bike) =>
+    !searchLocation || bike.location.toLowerCase().includes(searchLocation.toLowerCase())
   );
 
   return (
@@ -100,12 +101,20 @@ function HomePage() {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => navigate('/customer-home')}
-                  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                >
-                  Go to Issues Page
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate('/customer-home')}
+                    className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Go to Issues Page
+                  </button>
+                  <button
+                    onClick={() => setShowBookingsModal(true)}
+                    className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    View My Bookings
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -140,7 +149,7 @@ function HomePage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  🚴 eBikes ({bikes.filter(b => b.type === 'eBike').length})
+                  🚴 eBikes ({bikes.filter((b) => b.type === 'eBike').length})
                 </button>
                 <button
                   onClick={() => setFilterType('Gyroscooter')}
@@ -150,7 +159,7 @@ function HomePage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  🛴 Gyroscooters ({bikes.filter(b => b.type === 'Gyroscooter').length})
+                  🛴 Gyroscooters ({bikes.filter((b) => b.type === 'Gyroscooter').length})
                 </button>
                 <button
                   onClick={() => setFilterType('Segway')}
@@ -160,7 +169,7 @@ function HomePage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  🛴 Segways ({bikes.filter(b => b.type === 'Segway').length})
+                  🛴 Segways ({bikes.filter((b) => b.type === 'Segway').length})
                 </button>
               </div>
 
@@ -266,7 +275,7 @@ function HomePage() {
                     )}
 
                     <button
-                      onClick={() => handleBookNow(bike)}
+                      onClick={() => handleBookNow(bike.bike_id)}
                       className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                     >
                       {user ? 'Book Now' : 'Login to Book'}
@@ -303,6 +312,14 @@ function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Modals */}
+        {showBookModal && (
+          <BookSlotModal bikeId={selectedBikeId} onClose={() => setShowBookModal(false)} />
+        )}
+        {showBookingsModal && (
+          <ViewBookingsModal onClose={() => setShowBookingsModal(false)} />
+        )}
       </div>
     </>
   );

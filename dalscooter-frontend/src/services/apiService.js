@@ -139,11 +139,15 @@ export const apiService = {
   },
 
   // Delete availability slot
-  deleteAvailability: async (slotId) => {
-    const query = new URLSearchParams({ slot_id: slotId }).toString();
-    const response = await fetch(`${BOOKING_API_URL}/availability?${query}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+  deleteAvailability: async (bikeId, slotId) => {
+    const response = await fetch(`${BOOKING_API_URL}/availability`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        action: 'remove',
+        bike_id: bikeId,
+        slot_id: slotId
+      })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || `Delete availability failed: ${response.status}`);
@@ -159,8 +163,10 @@ export const apiService = {
         action: 'update',
         bike_id: slotData.bike_id,
         slot_id: slotData.slot_id,
-        startTime: slotData.startTime,
-        endTime: slotData.endTime
+        slot: {
+          startTime: slotData.startTime,
+          endTime: slotData.endTime
+        }
       })
     });
     const data = await response.json();
@@ -181,8 +187,8 @@ export const apiService = {
   },
 
   // Cancel a booking
-  cancelBooking: async (bookingId) => {
-    const response = await fetch(`${BOOKING_API_URL}/bookings?booking_id=${bookingId}`, {
+  cancelBooking: async (bookingReference) => {
+    const response = await fetch(`${BOOKING_API_URL}/bookings?booking_reference=${bookingReference}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });

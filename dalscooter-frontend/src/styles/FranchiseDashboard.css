@@ -376,7 +376,6 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--gray-700);
-  margin-bottom: 0.5rem;
 }
 
 .form-input,

@@ -1,4 +1,3 @@
-// src/pages/FeedbackPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import FeedbackForm from '../components/FeedbackForm';
@@ -6,6 +5,7 @@ import FeedbackList from '../components/FeedbackList';
 import SentimentDashboard from '../components/SentimentDashboard';
 import feedbackService from '../services/feedbackService';
 import { MessageCircle, BarChart3, List, Plus, X } from 'lucide-react';
+import '../styles/FeedbackPage.css';
 
 const FeedbackPage = () => {
   const { user } = useAuth();
@@ -23,7 +23,6 @@ const FeedbackPage = () => {
     if (!user?.idToken) return;
 
     try {
-      // Call bike management API to get available bikes
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bikes`, {
         headers: {
           'Authorization': `Bearer ${user.idToken}`,
@@ -44,9 +43,8 @@ const FeedbackPage = () => {
     console.log('Feedback submitted successfully:', result);
     setShowFeedbackForm(false);
     setSelectedBikeId('');
-    setRefreshKey(prev => prev + 1); // Force refresh of feedback list
+    setRefreshKey(prev => prev + 1);
     
-    // Show success message
     alert(`Thank you for your feedback! 
 Sentiment detected: ${result.sentiment_analysis?.sentiment}
 Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
@@ -61,21 +59,21 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
   const availableTabs = tabs.filter(tab => !tab.requiresAuth || user);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="feedback-container">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div className="feedback-header">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Feedback</h1>
-          <p className="text-gray-600">
+          <h1 className="header-title">Customer Feedback</h1>
+          <p className="header-subtitle">
             View customer reviews and sentiment analysis for our bikes
           </p>
         </div>
         
         {user && (
-          <div className="mt-4 md:mt-0">
+          <div className="feedback-header-button">
             <button
               onClick={() => setShowFeedbackForm(true)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="submit-feedback-button"
             >
               <Plus size={20} />
               <span>Submit Feedback</span>
@@ -86,29 +84,29 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
 
       {/* Feedback Form Modal */}
       {showFeedbackForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Submit Feedback</h2>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title">Submit Feedback</h2>
               <button
                 onClick={() => setShowFeedbackForm(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="modal-close-button"
               >
                 <X size={24} />
               </button>
             </div>
             
-            <div className="p-4">
+            <div className="modal-body">
               {/* Bike Selection */}
               {bikes.length > 0 && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="form-group">
+                  <label className="form-label">
                     Select Bike (Optional)
                   </label>
                   <select
                     value={selectedBikeId}
                     onChange={(e) => setSelectedBikeId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-select"
                   >
                     <option value="">Choose a bike...</option>
                     {bikes.map(bike => (
@@ -131,19 +129,15 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8">
+      <div className="tabs-container">
+        <nav className="tabs-nav">
           {availableTabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`tab-button ${activeTab === tab.id ? 'tab-button-active' : ''}`}
               >
                 <Icon size={20} />
                 <span>{tab.label}</span>
@@ -176,17 +170,17 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
 
       {/* Guest Message */}
       {!user && (
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-center">
-            <MessageCircle className="w-8 h-8 text-blue-600 mr-3" />
+        <div className="guest-message">
+          <div className="guest-message-content">
+            <MessageCircle className="guest-message-icon" />
             <div>
-              <h3 className="text-lg font-medium text-blue-900">Want to share your experience?</h3>
-              <p className="text-blue-700 mt-1">
+              <h3 className="guest-message-title">Want to share your experience?</h3>
+              <p className="guest-message-text">
                 Sign in to submit feedback and help other customers make informed decisions.
               </p>
               <a
                 href="/login"
-                className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="guest-message-button"
               >
                 Sign In to Submit Feedback
               </a>
@@ -198,7 +192,6 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
   );
 };
 
-// Component to show user's own feedback
 const MyFeedback = ({ user }) => {
   const [myFeedback, setMyFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -223,61 +216,57 @@ const MyFeedback = ({ user }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading your feedback...</span>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <span className="loading-text">Loading your feedback...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700">{error}</p>
+      <div className="alert-error">
+        <p className="alert-error-text">{error}</p>
       </div>
     );
   }
 
   if (myFeedback.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <MessageCircle size={48} className="mx-auto mb-4 text-gray-300" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No feedback yet</h3>
-        <p className="text-gray-600">You haven't submitted any feedback yet.</p>
+      <div className="empty-container">
+        <MessageCircle size={48} className="empty-icon" />
+        <h3 className="empty-title">No feedback yet</h3>
+        <p className="empty-text">You haven't submitted any feedback yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">
+    <div className="my-feedback-container">
+      <div className="my-feedback-card">
+        <h3 className="my-feedback-title">
           Your Feedback ({myFeedback.length} reviews)
         </h3>
         
-        <div className="space-y-4">
+        <div className="feedback-list">
           {myFeedback.map((feedback) => (
-            <div key={feedback.feedback_id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium">Bike: {feedback.bike_id}</span>
-                  <span className="text-yellow-500">
+            <div key={feedback.feedback_id} className="feedback-item">
+              <div className="feedback-item-header">
+                <div className="feedback-item-info">
+                  <span className="feedback-bike-id">Bike: {feedback.bike_id}</span>
+                  <span className="feedback-rating">
                     {'★'.repeat(feedback.rating)}
                     {'☆'.repeat(5 - feedback.rating)}
                   </span>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  feedback.sentiment === 'POSITIVE' ? 'bg-green-100 text-green-800' :
-                  feedback.sentiment === 'NEGATIVE' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`feedback-sentiment ${feedback.sentiment.toLowerCase()}`}>
                   {feedback.sentiment}
                 </span>
               </div>
               
-              <p className="text-gray-700 mb-3">{feedback.comment}</p>
+              <p className="feedback-comment">{feedback.comment}</p>
               
-              <div className="flex items-center justify-between text-sm text-gray-500">
+              <div className="feedback-meta">
                 <span>
                   Submitted: {new Date(feedback.created_at).toLocaleDateString()}
                 </span>
@@ -287,10 +276,10 @@ const MyFeedback = ({ user }) => {
               </div>
 
               {feedback.key_phrases && feedback.key_phrases.length > 0 && (
-                <div className="mt-3">
-                  <div className="flex flex-wrap gap-1">
+                <div className="feedback-key-phrases">
+                  <div className="key-phrases-list">
                     {feedback.key_phrases.slice(0, 3).map((phrase, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      <span key={idx} className="key-phrase">
                         {phrase}
                       </span>
                     ))}

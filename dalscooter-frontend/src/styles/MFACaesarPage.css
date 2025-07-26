@@ -1,0 +1,115 @@
+/* styles/MFACaesarPage.css */
+:root {
+  --light-blue: #E6ECF8;
+}
+
+.mfa-caesar-container {
+  min-height: 100vh;
+  background-color: var(--dalscooter-light-gray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mfa-caesar-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--dalscooter-dark);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.mfa-caesar-text {
+  font-size: 1rem;
+  color: var(--dalscooter-gray);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.mfa-caesar-cipher {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--dalscooter-dark);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  white-space: pre-wrap;
+}
+
+.error-message {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--dalscooter-error);
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1.5rem;
+  color: var(--dalscooter-error);
+  font-size: 0.875rem;
+  width: 100%;
+  max-width: 28rem;
+  text-align: center;
+}
+
+.mfa-caesar-form {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mfa-caesar-input {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: var(--dalscooter-dark);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.mfa-caesar-input:focus {
+  outline: none;
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 2px rgba(255, 195, 0, 0.2);
+}
+
+.mfa-caesar-input::placeholder {
+  color: var(--dalscooter-gray);
+}
+
+.mfa-caesar-button {
+  background: var(--dalscooter-blue);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mfa-caesar-button:disabled {
+  background: var(--dalscooter-gray);
+  cursor: not-allowed;
+}
+
+.mfa-caesar-button:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--dalscooter-dark);
+}
+
+@media (min-width: 640px) {
+  .mfa-caesar-title {
+    font-size: 2.5rem;
+  }
+}

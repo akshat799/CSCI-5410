@@ -1,26 +1,63 @@
+/* styles/Navbar.css */
 .nav-container {
-  background-color: #f8f8f8;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-brand a {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #000;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--dalscooter-dark);
   text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-brand a:hover {
+  color: var(--yellow);
 }
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
 }
 
-.nav-links a {
-  color: #000;
+.nav-links a,
+.nav-links button {
+  color: var(--dalscooter-dark);
   text-decoration: none;
   font-size: 1rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links button:hover {
+  color: var(--yellow);
+}
+
+.nav-role {
+  font-size: 0.875rem;
+  color: var(--dalscooter-gray);
+}
+
+@media (max-width: 640px) {
+  .nav-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }

@@ -73,7 +73,10 @@ function ViewBookingsModal({ onClose }) {
           <h3 className="bookings-title">Bookings ({bookings.length})</h3>
           <ul>
             {bookings.map((booking) => (
-              <li key={booking.booking_reference} className="booking-item">
+              <li
+                key={booking.booking_reference}
+                className={`booking-item ${booking.status === 'cancelled' ? 'cancelled' : 'booked'}`}
+              >
                 <div className="booking-content">
                   <span>
                     Booking Ref: {booking.booking_reference}<br />
@@ -84,7 +87,7 @@ function ViewBookingsModal({ onClose }) {
                   <button
                     onClick={() => handleCancel(booking.booking_reference)}
                     className="cancel-btn"
-                    disabled={loading}
+                    disabled={loading || booking.status === 'cancelled'}
                   >
                     Cancel
                   </button>

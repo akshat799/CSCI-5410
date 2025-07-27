@@ -90,7 +90,7 @@ function HomePage() {
                 <>
                   <button
                     onClick={() => navigate('/register')}
-                    className="glass-button"
+                    className="glass-button border"
                   >
                     Get Started
                   </button>

@@ -1,33 +1,27 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./Navbar.css";
+import "../styles/Navbar.css";
 
 function Navbar() {
   const { user, logout } = useAuth();
   const isLoggedIn = Boolean(user);
   const navigate = useNavigate();
 
-  const handleLogout = e => {
+  const handleLogout = (e) => {
     e.preventDefault();
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const getHomeLink = () => {
-    if (!user) return '/';
-    return user.role === 'FranchiseOperator' ? '/franchise-dashboard' : '/customer-home';
-  };
-
-  const getProfileText = () => {
-    if (!user) return 'Profile';
-    const currentPath = window.location.pathname;
-    return currentPath.includes('franchise') ? 'Dashboard' : 'Profile';
+    if (!user) return "/";
+    return user.role === "FranchiseOperator" ? "/franchise-dashboard" : "/";
   };
 
   const getRoleDisplay = () => {
-    if (!user) return '';
+    if (!user) return "";
     const currentPath = window.location.pathname;
-    return currentPath.includes('franchise') ? 'Franchise' : 'Customer';
+    return currentPath.includes("franchise") ? "Franchise" : "Customer";
   };
 
   return (
@@ -44,7 +38,7 @@ function Navbar() {
           </>
         ) : (
           <>
-            <Link to={getHomeLink()}>{getProfileText()}</Link>
+            <Link to="/profile">Profile</Link>
             {user && (
               <span className="nav-role">
                 ({getRoleDisplay()})

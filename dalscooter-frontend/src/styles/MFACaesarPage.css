@@ -33,7 +33,7 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   color: var(--dalscooter-dark);
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
   width: 100%;
   max-width: 28rem;
   white-space: pre-wrap;

@@ -76,14 +76,14 @@
 }
 
 .glass-button.border {
-  background: transparent;
-  border: 2px solid var(--dalscooter-blue);
-}
-
-.glass-button.border:hover {
   background: var(--yellow);
   color: var(--dalscooter-dark);
   border: none;
+}
+
+.glass-button.border:hover {
+  background: transparent;
+  border: 2px solid var(--dalscooter-blue);
 }
 
 /* Bikes Section */

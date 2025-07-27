@@ -13,6 +13,7 @@ import "./index.css"
 // import AvailableSlotsPage from './pages/AvailableSlotsPage';
 import BookingsPage from './pages/BookingsPage';
 import FranchiseAvailabilityDashboard from './pages/FranchiseAvailabilityDashboard';
+import ProfilePage from "./pages/ProfilePage";
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
@@ -34,6 +35,7 @@ function App() {
       {/* <Route path="/available-slot" element={<AvailableSlotsPage />} /> */}
       <Route path="/bookings" element={<BookingsPage />} />
       <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="*" element={<div className="p-6 text-center">404 — Page Not Found</div>} />
     </Routes>
   );

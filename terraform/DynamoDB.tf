@@ -95,3 +95,45 @@ resource "aws_dynamodb_table" "bikes" {
     projection_type = "ALL"
   }
 }
+
+
+resource "aws_dynamodb_table" "logins" {
+  name         = "Logins"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "login_id"
+  range_key    = "login_timestamp"
+
+  attribute {
+    name = "login_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "login_timestamp"
+    type = "S"
+  }
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "email"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "UserIdIndex"
+    hash_key        = "user_id"
+    range_key       = "login_timestamp"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "EmailIndex"
+    hash_key        = "email"
+    range_key       = "login_timestamp"
+    projection_type = "ALL"
+  }
+}

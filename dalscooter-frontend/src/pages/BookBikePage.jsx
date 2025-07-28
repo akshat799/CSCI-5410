@@ -87,7 +87,7 @@ function BookBikePage() {
       // await apiService.updateBike(bike.bike_id, { status: 'booked' });
       
     } catch (err) {
-      setError('Booking failed. Please try again.');
+      setError('Booking failed. Please try again.\n' + err);
     } finally {
       setLoading(false);
     }

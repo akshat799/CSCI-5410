@@ -9,6 +9,15 @@ import FranchiseDashboard from './pages/FranchiseDashboard';
 import BookBikePage from './pages/BookBikePage';
 import OTPPage from './pages/OTPPage';
 import FeedbackPage from './pages/FeedbackPage';
+import "./index.css"
+// import AvailableSlotsPage from './pages/AvailableSlotsPage';
+import BookingsPage from './pages/BookingsPage';
+import FranchiseAvailabilityDashboard from './pages/FranchiseAvailabilityDashboard';
+import ProfilePage from "./pages/ProfilePage";
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
+
 
 function App() {
   return (
@@ -23,6 +32,11 @@ function App() {
       <Route path="/book-bike" element={<BookBikePage />} />
       <Route path="/otp" element={<OTPPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
+      {/* <Route path="/available-slot" element={<AvailableSlotsPage />} /> */}
+      <Route path="/bookings" element={<BookingsPage />} />
+      <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="*" element={<div className="p-6 text-center">404 — Page Not Found</div>} />
     </Routes>
   );
 }

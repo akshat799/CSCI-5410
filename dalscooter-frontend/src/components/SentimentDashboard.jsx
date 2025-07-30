@@ -1,16 +1,7 @@
-// src/components/SentimentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import feedbackService from '../services/feedbackService';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  MessageCircle, 
-  BarChart3, 
-  PieChart,
-  Tag,
-  User
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, MessageCircle, BarChart3, PieChart, Tag, User } from 'lucide-react';
+import '../styles/SentimentDashboard.css';
 
 const SentimentDashboard = ({ bikeId }) => {
   const [feedback, setFeedback] = useState([]);
@@ -42,7 +33,6 @@ const SentimentDashboard = ({ bikeId }) => {
     }
   };
 
-  // Calculate advanced sentiment metrics
   const calculateSentimentMetrics = () => {
     if (!feedback.length) return null;
 
@@ -55,30 +45,25 @@ const SentimentDashboard = ({ bikeId }) => {
     let fallbackCount = 0;
 
     feedback.forEach(item => {
-      // Count sentiments
       const sentiment = item.sentiment || 'NEUTRAL';
       sentimentCounts[sentiment] = (sentimentCounts[sentiment] || 0) + 1;
 
-      // Track confidence scores
       const confidence = parseFloat(item.confidence || item.sentiment_score || 0);
       confidenceScores.push(confidence);
       totalConfidence += confidence;
 
-      // Count analysis methods
       if (item.analysis_method === 'fallback') {
         fallbackCount++;
       } else {
         comprehendCount++;
       }
 
-      // Aggregate key phrases
       if (item.key_phrases && Array.isArray(item.key_phrases)) {
         item.key_phrases.forEach(phrase => {
           keyPhrases[phrase] = (keyPhrases[phrase] || 0) + 1;
         });
       }
 
-      // Aggregate entities
       if (item.entities && Array.isArray(item.entities)) {
         item.entities.forEach(entity => {
           const key = `${entity.text} (${entity.type})`;
@@ -87,7 +72,6 @@ const SentimentDashboard = ({ bikeId }) => {
       }
     });
 
-    // Sort key phrases and entities by frequency
     const topKeyPhrases = Object.entries(keyPhrases)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 10);
@@ -112,30 +96,30 @@ const SentimentDashboard = ({ bikeId }) => {
   const getSentimentIcon = (sentiment) => {
     switch (sentiment?.toUpperCase()) {
       case 'POSITIVE':
-        return <TrendingUp className="w-5 h-5" />;
+        return <TrendingUp className="sentiment-icon" />;
       case 'NEGATIVE':
-        return <TrendingDown className="w-5 h-5" />;
+        return <TrendingDown className="sentiment-icon" />;
       case 'NEUTRAL':
-        return <Minus className="w-5 h-5" />;
+        return <Minus className="sentiment-icon" />;
       case 'MIXED':
-        return <MessageCircle className="w-5 h-5" />;
+        return <MessageCircle className="sentiment-icon" />;
       default:
-        return <Minus className="w-5 h-5" />;
+        return <Minus className="sentiment-icon" />;
     }
   };
 
   const getSentimentColor = (sentiment) => {
     switch (sentiment?.toUpperCase()) {
       case 'POSITIVE':
-        return 'bg-green-500';
+        return 'sentiment-positive';
       case 'NEGATIVE':
-        return 'bg-red-500';
+        return 'sentiment-negative';
       case 'NEUTRAL':
-        return 'bg-gray-500';
+        return 'sentiment-neutral';
       case 'MIXED':
-        return 'bg-yellow-500';
+        return 'sentiment-mixed';
       default:
-        return 'bg-gray-500';
+        return 'sentiment-neutral';
     }
   };
 
@@ -145,17 +129,17 @@ const SentimentDashboard = ({ bikeId }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading sentiment analysis...</span>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <span className="loading-text">Loading sentiment analysis...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700">{error}</p>
+      <div className="alert-error">
+        <p className="alert-error-text">{error}</p>
       </div>
     );
   }
@@ -164,33 +148,31 @@ const SentimentDashboard = ({ bikeId }) => {
 
   if (!metrics || feedback.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <BarChart3 size={48} className="mx-auto mb-4 text-gray-300" />
-        <p className="text-gray-500">No sentiment data available</p>
+      <div className="empty-container">
+        <BarChart3 size={48} className="empty-icon" />
+        <p className="empty-text">No sentiment data available</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="sentiment-dashboard">
       {/* Sentiment Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="sentiment-grid">
         {Object.entries(metrics.sentimentCounts).map(([sentiment, count]) => (
           <div
             key={sentiment}
-            className={`bg-white rounded-lg shadow-md p-4 cursor-pointer transition-all hover:shadow-lg ${
-              selectedSentiment === sentiment ? 'ring-2 ring-blue-500' : ''
-            }`}
+            className={`sentiment-card ${selectedSentiment === sentiment ? 'sentiment-card-active' : ''}`}
             onClick={() => setSelectedSentiment(selectedSentiment === sentiment ? 'ALL' : sentiment)}
           >
-            <div className="flex items-center justify-between">
-              <div className={`p-2 rounded-full text-white ${getSentimentColor(sentiment)}`}>
+            <div className="sentiment-card-content">
+              <div className={`sentiment-icon-container ${getSentimentColor(sentiment)}`}>
                 {getSentimentIcon(sentiment)}
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">{count}</div>
-                <div className="text-sm text-gray-600">{sentiment}</div>
-                <div className="text-xs text-gray-500">
+              <div className="sentiment-details">
+                <div className="sentiment-count">{count}</div>
+                <div className="sentiment-label">{sentiment}</div>
+                <div className="sentiment-percentage">
                   {((count / feedback.length) * 100).toFixed(1)}%
                 </div>
               </div>
@@ -200,54 +182,48 @@ const SentimentDashboard = ({ bikeId }) => {
       </div>
 
       {/* Analysis Method Breakdown */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <PieChart className="w-5 h-5 mr-2" />
+      <div className="analysis-card">
+        <h3 className="analysis-title">
+          <PieChart className="analysis-icon" />
           Analysis Method Breakdown
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">
-              {metrics.analysisMethodBreakdown.comprehend}
-            </div>
-            <div className="text-sm text-gray-600">Amazon Comprehend</div>
+        <div className="analysis-grid">
+          <div className="analysis-item">
+            <div className="analysis-value">{metrics.analysisMethodBreakdown.comprehend}</div>
+            <div className="analysis-label">Amazon Comprehend</div>
           </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <div className="text-2xl font-bold text-orange-600">
-              {metrics.analysisMethodBreakdown.fallback}
-            </div>
-            <div className="text-sm text-gray-600">Fallback Analysis</div>
+          <div className="analysis-item">
+            <div className="analysis-value">{metrics.analysisMethodBreakdown.fallback}</div>
+            <div className="analysis-label">Fallback Analysis</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">
-              {metrics.averageConfidence.toFixed(2)}
-            </div>
-            <div className="text-sm text-gray-600">Avg Confidence</div>
+          <div className="analysis-item">
+            <div className="analysis-value">{metrics.averageConfidence.toFixed(2)}</div>
+            <div className="analysis-label">Avg Confidence</div>
           </div>
         </div>
       </div>
 
       {/* Top Key Phrases */}
       {metrics.topKeyPhrases.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <Tag className="w-5 h-5 mr-2" />
+        <div className="key-phrases-card">
+          <h3 className="key-phrases-title">
+            <Tag className="key-phrases-icon" />
             Most Mentioned Key Phrases
           </h3>
-          <div className="space-y-2">
+          <div className="key-phrases-list">
             {metrics.topKeyPhrases.map(([phrase, count]) => (
-              <div key={phrase} className="flex items-center justify-between">
-                <span className="text-gray-700">{phrase}</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-24 bg-gray-200 rounded-full h-2">
+              <div key={phrase} className="key-phrase-item">
+                <span className="key-phrase-text">{phrase}</span>
+                <div className="key-phrase-meta">
+                  <div className="key-phrase-bar-container">
                     <div
-                      className="bg-blue-500 h-2 rounded-full"
+                      className="key-phrase-bar"
                       style={{ 
                         width: `${(count / Math.max(...metrics.topKeyPhrases.map(([,c]) => c))) * 100}%` 
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm text-gray-500 w-8">{count}</span>
+                  <span className="key-phrase-count">{count}</span>
                 </div>
               </div>
             ))}
@@ -257,25 +233,25 @@ const SentimentDashboard = ({ bikeId }) => {
 
       {/* Top Entities */}
       {metrics.topEntities.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <User className="w-5 h-5 mr-2" />
+        <div className="entities-card">
+          <h3 className="entities-title">
+            <User className="entities-icon" />
             Detected Entities
           </h3>
-          <div className="space-y-2">
+          <div className="entities-list">
             {metrics.topEntities.map(([entity, count]) => (
-              <div key={entity} className="flex items-center justify-between">
-                <span className="text-gray-700">{entity}</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-24 bg-gray-200 rounded-full h-2">
+              <div key={entity} className="entity-item">
+                <span className="entity-text">{entity}</span>
+                <div className="entity-meta">
+                  <div className="entity-bar-container">
                     <div
-                      className="bg-purple-500 h-2 rounded-full"
+                      className="entity-bar"
                       style={{ 
                         width: `${(count / Math.max(...metrics.topEntities.map(([,c]) => c))) * 100}%` 
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm text-gray-500 w-8">{count}</span>
+                  <span className="entity-count">{count}</span>
                 </div>
               </div>
             ))}
@@ -284,57 +260,57 @@ const SentimentDashboard = ({ bikeId }) => {
       )}
 
       {/* Detailed Feedback List */}
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">
+      <div className="feedback-list-card">
+        <div className="feedback-list-header">
+          <h3 className="feedback-list-title">
             Detailed Sentiment Analysis
             {selectedSentiment !== 'ALL' && (
-              <span className="ml-2 text-sm font-normal text-gray-500">
+              <span className="feedback-list-filter">
                 (Filtered by {selectedSentiment})
               </span>
             )}
           </h3>
           <button
             onClick={() => setSelectedSentiment('ALL')}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="feedback-list-view-all"
           >
             View All ({feedback.length})
           </button>
         </div>
 
-        <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+        <div className="feedback-list-content">
           {filteredFeedback.map((item) => (
-            <div key={item.feedback_id} className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-full text-white ${getSentimentColor(item.sentiment)}`}>
+            <div key={item.feedback_id} className="feedback-item">
+              <div className="feedback-item-header">
+                <div className="feedback-item-info">
+                  <div className={`feedback-sentiment-icon ${getSentimentColor(item.sentiment)}`}>
                     {getSentimentIcon(item.sentiment)}
                   </div>
                   <div>
-                    <div className="font-medium">{item.sentiment}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="feedback-sentiment">{item.sentiment}</div>
+                    <div className="feedback-confidence">
                       Confidence: {(parseFloat(item.confidence || item.sentiment_score || 0) * 100).toFixed(1)}%
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="feedback-analysis-method">
                   {item.analysis_method === 'fallback' ? 'Fallback' : 'Comprehend'}
                 </div>
               </div>
               
-              <p className="text-gray-700 text-sm mb-2">{item.comment}</p>
+              <p className="feedback-comment">{item.comment}</p>
               
               {item.key_phrases && item.key_phrases.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="feedback-key-phrases">
                   {item.key_phrases.slice(0, 3).map((phrase, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <span key={idx} className="key-phrase">
                       {phrase}
                     </span>
                   ))}
                 </div>
               )}
               
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="feedback-meta">
                 <span>Bike: {item.bike_id}</span>
                 <span>Rating: {item.rating}/5</span>
               </div>

@@ -1,0 +1,96 @@
+.modal-content {
+  background-color: var(--white);
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  margin: 5rem auto;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.modal-content h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--gray-900);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-form label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.modal-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.modal-form .flex {
+  align-items: center;
+}
+
+.modal-form button {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-footer .close-btn {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.modal-footer .close-btn:hover {
+  background: var(--gray-300);
+}
+
+.modal-footer .submit-btn {
+  background: var(--blue-600);
+  color: var(--white);
+}
+
+.modal-footer .submit-btn:hover {
+  background: var(--blue-700);
+}
+
+.modal-footer .submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-message {
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.5rem;
+  color: var(--red-600);
+}

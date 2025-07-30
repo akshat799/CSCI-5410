@@ -1,11 +1,13 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { apiService } from "../services/apiService"
-import Navbar from "../components/Navbar"
-import { Plus, Edit3, Trash2, Search, MapPin, DollarSign, Battery, Zap, Eye, RefreshCw } from "lucide-react"
+import Navbar from "../components/NavBar"
+import AddAvailabilityModal from '../components/AddAvailabilityModal';
+import ViewAvailabilityModal from '../components/ViewAvailabilityModal';
+import { Plus, Edit3, Trash2, Search, MapPin, DollarSign, Battery, Zap, Eye, RefreshCw, Calendar } from "lucide-react"
+import '../styles/FranchiseDashboard.css';
 
 function FranchiseDashboard() {
   const { user } = useAuth()
@@ -18,6 +20,10 @@ function FranchiseDashboard() {
   const [success, setSuccess] = useState("")
   const [filterType, setFilterType] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [latestScooterId, setLatestScooterId] = useState('');
+  const [showViewAvailabilityModal, setShowViewAvailabilityModal] = useState(false)
+  const [selectedBikeId, setSelectedBikeId] = useState('')
 
   const [bikeForm, setBikeForm] = useState({
     type: "eBike",
@@ -42,6 +48,7 @@ function FranchiseDashboard() {
     try {
       const filters = type ? { type } : {}
       const data = await apiService.getBikes(filters)
+      console.log("Fetched bikes from API:", data);
       setBikes(data.bikes || [])
     } catch (err) {
       setError("Error loading bikes: " + err.message)
@@ -63,6 +70,7 @@ function FranchiseDashboard() {
       }
 
       await apiService.createBike(bikeData)
+      
       setSuccess("Bike created successfully!")
       setShowAddForm(false)
       resetForm()
@@ -206,31 +214,31 @@ function FranchiseDashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case "available":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bike-card-status available"
       case "booked":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bike-card-status booked"
       case "maintenance":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bike-card-status maintenance"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bike-card-status"
     }
   }
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
-        <div className="container max-w-7xl mx-auto px-4 py-8">
+      <div className="franchise-container">
+        <div className="container">
           {/* Header */}
-          <div className="mb-8">
+          <div className="header">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Franchise Dashboard</h1>
-                <p className="text-gray-600">Manage your fleet of bikes, scooters, and segways</p>
+                <h1 className="header-title">Franchise Dashboard</h1>
+                <p className="header-subtitle">Manage your fleet of bikes, scooters, and segways</p>
               </div>
               <button
                 onClick={() => loadBikes(filterType)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="refresh-button"
               >
                 <RefreshCw className="w-4 h-4" />
                 Refresh
@@ -240,75 +248,75 @@ function FranchiseDashboard() {
 
           {/* Alerts */}
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg">
+            <div className="alert-error">
               <div className="flex">
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="alert-error-text">{error}</p>
                 </div>
               </div>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6 rounded-r-lg">
+            <div className="alert-success">
               <div className="flex">
                 <div className="ml-3">
-                  <p className="text-sm text-green-700">{success}</p>
+                  <p className="alert-success-text">{success}</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="stats-grid">
+            <div className="stats-card">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Eye className="w-6 h-6 text-blue-600" />
+                <div className="stats-icon blue">
+                  <Eye className="w-6 h-6" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Bikes</p>
-                  <p className="text-2xl font-bold text-gray-900">{bikes.length}</p>
+                <div className="stats-content">
+                  <p className="stats-label">Total Bikes</p>
+                  <p className="stats-value">{bikes.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="stats-card">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Zap className="w-6 h-6 text-green-600" />
+                <div className="stats-icon green">
+                  <Zap className="w-6 h-6" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Available</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="stats-content">
+                  <p className="stats-label">Available</p>
+                  <p className="stats-value">
                     {bikes.filter((b) => b.status === "available").length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="stats-card">
               <div className="flex items-center">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Battery className="w-6 h-6 text-yellow-600" />
+                <div className="stats-icon yellow">
+                  <Battery className="w-6 h-6" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">In Use</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="stats-content">
+                  <p className="stats-label">In Use</p>
+                  <p className="stats-value">
                     {bikes.filter((b) => b.status === "booked").length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="stats-card">
               <div className="flex items-center">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-red-600" />
+                <div className="stats-icon red">
+                  <DollarSign className="w-6 h-6" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Avg. Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="stats-content">
+                  <p className="stats-label">Avg. Rate</p>
+                  <p className="stats-value">
                     $
                     {bikes.length > 0
                       ? (bikes.reduce((sum, b) => sum + b.hourly_rate, 0) / bikes.length).toFixed(2)
@@ -320,60 +328,44 @@ function FranchiseDashboard() {
           </div>
 
           {/* Controls */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              <div className="flex flex-wrap gap-3">
+          <div className="controls">
+            <div className="controls-inner">
+              <div className="filter-group">
                 <button
                   onClick={() => handleFilterChange("")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === ""
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`filter-button ${filterType === "" ? "active" : "inactive"}`}
                 >
                   All ({bikes.length})
                 </button>
                 <button
                   onClick={() => handleFilterChange("eBike")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === "eBike"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`filter-button ${filterType === "eBike" ? "active" : "inactive"}`}
                 >
                   🚴 eBikes ({bikes.filter((b) => b.type === "eBike").length})
                 </button>
                 <button
                   onClick={() => handleFilterChange("Gyroscooter")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === "Gyroscooter"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`filter-button ${filterType === "Gyroscooter" ? "active" : "inactive"}`}
                 >
                   🛴 Gyroscooters ({bikes.filter((b) => b.type === "Gyroscooter").length})
                 </button>
                 <button
                   onClick={() => handleFilterChange("Segway")}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === "Segway"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`filter-button ${filterType === "Segway" ? "active" : "inactive"}`}
                 >
                   🛴 Segways ({bikes.filter((b) => b.type === "Segway").length})
                 </button>
               </div>
 
-              <div className="flex gap-3 w-full lg:w-auto">
-                <div className="relative flex-1 lg:w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <div className="search-group">
+                <div className="search-container">
+                  <Search className="search-icon" />
                   <input
                     type="text"
                     placeholder="Search bikes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="search-input"
                   />
                 </div>
                 <button
@@ -381,7 +373,7 @@ function FranchiseDashboard() {
                     setShowAddForm(true)
                     resetForm()
                   }}
-                  className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm"
+                  className="add-button"
                 >
                   <Plus className="w-4 h-4" />
                   Add Bike
@@ -392,28 +384,28 @@ function FranchiseDashboard() {
 
           {/* Add/Edit Form */}
           {showAddForm && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">{editingBike ? "Edit Bike" : "Add New Bike"}</h3>
+            <div className="form-container">
+              <div className="form-header">
+                <h3 className="form-title">{editingBike ? "Edit Bike" : "Add New Bike"}</h3>
                 <button
                   onClick={() => {
                     setShowAddForm(false)
                     resetForm()
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="form-close"
                 >
                   ✕
                 </button>
               </div>
 
-              <form onSubmit={editingBike ? handleUpdateBike : handleAddBike} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bike Type</label>
+              <form onSubmit={editingBike ? handleUpdateBike : handleAddBike} className="form">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label className="form-label">Bike Type</label>
                     <select
                       value={bikeForm.type}
                       onChange={(e) => setBikeForm((prev) => ({ ...prev, type: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="form-select"
                       required
                     >
                       <option value="eBike">🚴 eBike</option>
@@ -422,75 +414,75 @@ function FranchiseDashboard() {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Access Code</label>
-                    <div className="flex gap-2">
+                  <div className="form-group">
+                    <label className="form-label">Access Code</label>
+                    <div className="form-access-code">
                       <input
                         type="text"
                         value={bikeForm.access_code}
                         onChange={(e) => setBikeForm((prev) => ({ ...prev, access_code: e.target.value }))}
-                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="form-input"
                         placeholder="DAL123ABC"
                         required
                       />
                       <button
                         type="button"
                         onClick={generateAccessCode}
-                        className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm font-medium"
+                        className="form-generate-button"
                       >
                         Generate
                       </button>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Hourly Rate ($)</label>
+                  <div className="form-group">
+                    <label className="form-label">Hourly Rate ($)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={bikeForm.hourly_rate}
                       onChange={(e) => setBikeForm((prev) => ({ ...prev, hourly_rate: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="form-input"
                       placeholder="15.00"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <div className="form-group">
+                    <label className="form-label">Location</label>
+                    <div className="form-location-container">
+                      <MapPin className="form-location-icon" />
                       <input
                         type="text"
                         value={bikeForm.location}
                         onChange={(e) => setBikeForm((prev) => ({ ...prev, location: e.target.value }))}
-                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="form-input form-location-input"
                         placeholder="Halifax Downtown"
                         required
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount Code</label>
+                  <div className="form-group">
+                    <label className="form-label">Discount Code</label>
                     <input
                       type="text"
                       value={bikeForm.discount_code}
                       onChange={(e) => setBikeForm((prev) => ({ ...prev, discount_code: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="form-input"
                       placeholder="SUMMER20"
                     />
                   </div>
                 </div>
 
                 {/* Features Section */}
-                <div className="border-t pt-6">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">Features & Specifications</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="form-features-section">
+                  <h4 className="form-features-title">Features & Specifications</h4>
+                  <div className="form-features-grid">
                     {/* Common Features */}
-                    <div className="space-y-4">
-                      <h5 className="font-medium text-gray-700">Common Features</h5>
-                      <label className="flex items-center space-x-3">
+                    <div className="form-features-group">
+                      <h5 className="form-features-subtitle">Common Features</h5>
+                      <label className="form-checkbox">
                         <input
                           type="checkbox"
                           checked={bikeForm.features.height_adjustment || false}
@@ -500,12 +492,10 @@ function FranchiseDashboard() {
                               features: { ...prev.features, height_adjustment: e.target.checked },
                             }))
                           }
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
-                        <span className="text-sm text-gray-700">Height Adjustment</span>
+                        <span>Height Adjustment</span>
                       </label>
-
-                      <label className="flex items-center space-x-3">
+                      <label className="form-checkbox">
                         <input
                           type="checkbox"
                           checked={bikeForm.features.gps_enabled || false}
@@ -515,18 +505,17 @@ function FranchiseDashboard() {
                               features: { ...prev.features, gps_enabled: e.target.checked },
                             }))
                           }
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
-                        <span className="text-sm text-gray-700">GPS Enabled</span>
+                        <span>GPS Enabled</span>
                       </label>
                     </div>
 
                     {/* Type-specific Features */}
                     {bikeForm.type === "eBike" && (
-                      <div className="space-y-4">
-                        <h5 className="font-medium text-gray-700">eBike Features</h5>
+                      <div className="form-features-group">
+                        <h5 className="form-features-subtitle">eBike Features</h5>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Battery Life</label>
+                          <label className="form-label">Battery Life</label>
                           <input
                             type="text"
                             value={bikeForm.features.battery_life || ""}
@@ -536,11 +525,11 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, battery_life: e.target.value },
                               }))
                             }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="form-input"
                             placeholder="50km"
                           />
                         </div>
-                        <label className="flex items-center space-x-3">
+                        <label className="form-checkbox">
                           <input
                             type="checkbox"
                             checked={bikeForm.features.phone_holder || false}
@@ -550,18 +539,17 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, phone_holder: e.target.checked },
                               }))
                             }
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">Phone Holder</span>
+                          <span>Phone Holder</span>
                         </label>
                       </div>
                     )}
 
                     {bikeForm.type === "Gyroscooter" && (
-                      <div className="space-y-4">
-                        <h5 className="font-medium text-gray-700">Gyroscooter Features</h5>
+                      <div className="form-features-group">
+                        <h5 className="form-features-subtitle">Gyroscooter Features</h5>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Max Speed</label>
+                          <label className="form-label">Max Speed</label>
                           <input
                             type="text"
                             value={bikeForm.features.max_speed || ""}
@@ -571,12 +559,12 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, max_speed: e.target.value },
                               }))
                             }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="form-input"
                             placeholder="25km/h"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Weight Limit</label>
+                          <label className="form-label">Weight Limit</label>
                           <input
                             type="text"
                             value={bikeForm.features.weight_limit || ""}
@@ -586,11 +574,11 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, weight_limit: e.target.value },
                               }))
                             }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="form-input"
                             placeholder="120kg"
                           />
                         </div>
-                        <label className="flex items-center space-x-3">
+                        <label className="form-checkbox">
                           <input
                             type="checkbox"
                             checked={bikeForm.features.led_lights || false}
@@ -600,17 +588,16 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, led_lights: e.target.checked },
                               }))
                             }
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">LED Lights</span>
+                          <span>LED Lights</span>
                         </label>
                       </div>
                     )}
 
                     {bikeForm.type === "Segway" && (
-                      <div className="space-y-4">
-                        <h5 className="font-medium text-gray-700">Segway Features</h5>
-                        <label className="flex items-center space-x-3">
+                      <div className="form-features-group">
+                        <h5 className="form-features-subtitle">Segway Features</h5>
+                        <label className="form-checkbox">
                           <input
                             type="checkbox"
                             checked={bikeForm.features.self_balancing || false}
@@ -620,12 +607,11 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, self_balancing: e.target.checked },
                               }))
                             }
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">Self Balancing</span>
+                          <span>Self Balancing</span>
                         </label>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Max Range</label>
+                          <label className="form-label">Max Range</label>
                           <input
                             type="text"
                             value={bikeForm.features.max_range || ""}
@@ -635,11 +621,11 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, max_range: e.target.value },
                               }))
                             }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="form-input"
                             placeholder="38km"
                           />
                         </div>
-                        <label className="flex items-center space-x-3">
+                        <label className="form-checkbox">
                           <input
                             type="checkbox"
                             checked={bikeForm.features.app_control || false}
@@ -649,24 +635,23 @@ function FranchiseDashboard() {
                                 features: { ...prev.features, app_control: e.target.checked },
                               }))
                             }
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">App Control</span>
+                          <span>App Control</span>
                         </label>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-6 border-t">
+                <div className="form-buttons">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="form-submit-button"
                   >
                     {loading ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div className="loading-spinner"></div>
                         Saving...
                       </>
                     ) : (
@@ -679,7 +664,7 @@ function FranchiseDashboard() {
                       setShowAddForm(false)
                       resetForm()
                     }}
-                    className="bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 transition-colors"
+                    className="form-cancel-button"
                   >
                     Cancel
                   </button>
@@ -689,96 +674,91 @@ function FranchiseDashboard() {
           )}
 
           {/* Bikes Grid */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">
+          <div className="bikes-grid-container">
+            <div className="bikes-grid-header">
+              <h3 className="bikes-grid-title">
                 {filterType ? `${filterType}s` : "All Bikes"}
-                <span className="text-gray-500 font-normal ml-2">({filteredBikes.length})</span>
+                <span className="bikes-grid-count">({filteredBikes.length})</span>
               </h3>
             </div>
 
             {loading ? (
-              <div className="p-12 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-                <p className="text-gray-600">Loading bikes...</p>
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p className="loading-text">Loading bikes...</p>
               </div>
             ) : filteredBikes.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="text-6xl mb-4">🚲</div>
-                <p className="text-gray-500 text-lg mb-2">No bikes found</p>
-                <p className="text-gray-400">
+              <div className="empty-container">
+                <div className="empty-icon">🚲</div>
+                <p className="empty-text">No bikes found</p>
+                <p className="empty-subtext">
                   {searchTerm ? "Try adjusting your search terms" : "Add your first bike to get started!"}
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+              <div className="bikes-grid">
                 {filteredBikes.map((bike) => (
                   <div
                     key={bike.bike_id}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className="bike-card"
                   >
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="bike-card-header">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{getTypeIcon(bike.type)}</span>
+                        <span className="bike-card-icon">{getTypeIcon(bike.type)}</span>
                         <div>
-                          <h4 className="font-semibold text-gray-900">{bike.type}</h4>
-                          <p className="text-sm text-gray-500">{bike.access_code}</p>
+                          <h4 className="bike-card-title">{bike.type}</h4>
+                          <p className="bike-card-code">{bike.access_code}</p>
                         </div>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(bike.status)}`}
-                      >
+                      <span className={getStatusColor(bike.status)}>
                         {bike.status}
                       </span>
                     </div>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="bike-card-details">
+                      <div className="bike-card-detail">
                         <MapPin className="w-4 h-4" />
                         {bike.location}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="bike-card-detail">
                         <DollarSign className="w-4 h-4" />${bike.hourly_rate}/hour
                       </div>
                       {bike.discount_code && (
-                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <div className="bike-card-discount">
                           🎫 {bike.discount_code}
                         </div>
                       )}
                     </div>
 
-                    {/* Features */}
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(bike.features || {}).map(([key, value]) => {
-                          if (typeof value === "boolean" && value) {
-                            return (
-                              <span
-                                key={key}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                              >
-                                {key.replace(/_/g, " ")}
-                              </span>
-                            )
-                          } else if (typeof value === "string" && value) {
-                            return (
-                              <span
-                                key={key}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                              >
-                                {key.replace(/_/g, " ")}: {value}
-                              </span>
-                            )
-                          }
-                          return null
-                        })}
-                      </div>
+                    <div className="bike-card-features">
+                      {Object.entries(bike.features || {}).map(([key, value]) => {
+                        if (typeof value === "boolean" && value) {
+                          return (
+                            <span
+                              key={key}
+                              className="bike-card-feature boolean"
+                            >
+                              {key.replace(/_/g, " ")}
+                            </span>
+                          )
+                        } else if (typeof value === "string" && value) {
+                          return (
+                            <span
+                              key={key}
+                              className="bike-card-feature string"
+                            >
+                              {key.replace(/_/g, " ")}: {value}
+                            </span>
+                          )
+                        }
+                        return null
+                      })}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="bike-card-actions">
                       <button
                         onClick={() => startEditing(bike)}
-                        className="flex items-center gap-1 flex-1 justify-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="bike-card-button edit"
                       >
                         <Edit3 className="w-4 h-4" />
                         Edit
@@ -786,10 +766,30 @@ function FranchiseDashboard() {
                       <button
                         onClick={() => handleDeleteBike(bike.bike_id)}
                         disabled={loading}
-                        className="flex items-center gap-1 flex-1 justify-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="bike-card-button delete"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLatestScooterId(bike.bike_id);
+                          setShowAvailabilityModal(true);
+                        }}
+                        className="bike-card-button add-availability"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Availability
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedBikeId(bike.bike_id);
+                          setShowViewAvailabilityModal(true);
+                        }}
+                        className="bike-card-button view-slots"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        View Slots
                       </button>
                     </div>
                   </div>
@@ -799,6 +799,22 @@ function FranchiseDashboard() {
           </div>
         </div>
       </div>
+      {showAvailabilityModal && (
+        <AddAvailabilityModal
+          bikeId={latestScooterId}
+          onClose={() => setShowAvailabilityModal(false)}
+          onSuccess={() => {
+            setShowAvailabilityModal(false);
+            loadBikes(filterType);
+          }}
+        />
+      )}
+      {showViewAvailabilityModal && (
+        <ViewAvailabilityModal
+          bikeId={selectedBikeId}
+          onClose={() => setShowViewAvailabilityModal(false)}
+        />
+      )}
     </>
   )
 }

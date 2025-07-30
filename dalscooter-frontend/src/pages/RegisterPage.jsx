@@ -1,8 +1,8 @@
-// src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import '../styles/RegisterPage.css';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -53,53 +53,53 @@ export default function RegisterPage() {
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h2>Create an Account</h2>
-        {error && <p className="error">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <label>
-            Full Name<br />
+      <div className="register-container">
+        <h2 className="register-title">Create an Account</h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit} className="register-form">
+          <label className="register-label">
+            Full Name
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
 
-          <label>
-            Email<br />
+          <label className="register-label">
+            Email
             <input
               name="email"
               type="email"
               value={form.email}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
 
-          <label>
-            Password<br />
+          <label className="register-label">
+            Password
             <input
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
 
-          <label>
-            Security Question<br />
+          <label className="register-label">
+            Security Question
             <select
               name="question"
               value={form.question}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-select"
             >
               <option value="">Select a question</option>
               <option value="What is your pet’s name?">What is your pet’s name?</option>
@@ -108,54 +108,56 @@ export default function RegisterPage() {
             </select>
           </label>
 
-          <label>
-            Your Answer<br />
+          <label className="register-label">
+            Your Answer
             <input
               name="answer"
               value={form.answer}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
 
-          <label>
-            I am signing up as<br />
+          <label className="register-label">
+            I am signing up as
             <select
               name="role"
               value={form.role}
               onChange={handleChange}
               required
-              style={{ marginTop: '0.25rem' }}
+              className="register-select"
             >
               <option value="">Select a role</option>
               <option value="RegisteredCustomer">User</option>
               <option value="FranchiseOperator">Franchise Owner</option>
             </select>
           </label>
-          <label>
-            Caesar Text<br />
+
+          <label className="register-label">
+            Caesar Text
             <input
               name="caesarText"
               value={form.caesarText}
               onChange={handleChange}
               placeholder="Enter text to encrypt"
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
-          <label>
-            Shift Key<br />
+
+          <label className="register-label">
+            Shift Key
             <input
               name="shiftKey"
               type="number"
               value={form.shiftKey}
               onChange={handleChange}
               placeholder="e.g. 3"
-              style={{ marginTop: '0.25rem' }}
+              className="register-input"
             />
           </label>
 
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading} className="register-button">
             {loading ? 'Registering…' : 'Register'}
           </button>
         </form>

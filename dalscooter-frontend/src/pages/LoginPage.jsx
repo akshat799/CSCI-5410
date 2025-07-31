@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import '../styles/LoginPage.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,22 +15,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (challengeParams) {
-      // IMPORTANT: Store selected role when challenge is triggered
       console.log('Storing role for MFA:', selectedRole);
       localStorage.setItem('pendingRole', selectedRole);
-      
-      if (challengeParams.challenge_type === 'QA') {
-        navigate(`/mfa-question?role=${selectedRole}`);
-      } else {
-        navigate(`/mfa-caesar?role=${selectedRole}`);
-      }
+      const redirectPath = challengeParams.challenge_type === 'QA'
+        ? `/mfa-question?role=${selectedRole}`
+        : `/mfa-caesar?role=${selectedRole}`;
+      navigate(redirectPath, { replace: true });
     } else if (user) {
-      // Simple redirect based on selected role
-      console.log('Login success, redirecting based on selected role:', selectedRole);
-      if (selectedRole === 'FranchiseOperator') {
-        navigate('/franchise-dashboard');
+      console.log('Login success, redirecting based on user role:', user.role);
+      localStorage.removeItem('pendingRole');
+      if (user.role === 'FranchiseOperator') {
+        navigate('/franchise-dashboard', { replace: true });
       } else {
-        navigate('/customer-home');
+        navigate('/', { replace: true });
       }
     }
   }, [challengeParams, user, navigate, selectedRole]);
@@ -39,43 +37,40 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     
-    // Store selected role BEFORE login attempt
     console.log('Storing selected role before login:', selectedRole);
     localStorage.setItem('pendingRole', selectedRole);
     
     try {
       const result = await login({ email, password, role: selectedRole });
-      console.log('Login result:', result); // Debug log
-      console.log('Selected role during login:', selectedRole); // Debug log
+      console.log('Login result:', result);
+      console.log('Selected role during login:', selectedRole);
       
       if (result && result.success) {
-        // IMPORTANT: Validate user's actual role against selected role
         const actualUserRole = await validateUserRole(email);
         console.log('Actual user role from Cognito:', actualUserRole);
-        console.log('Selected role:', selectedRole);
         
-        // Check if user selected the wrong role
         if (selectedRole === 'FranchiseOperator' && actualUserRole !== 'FranchiseOperator') {
           setError('Access denied. You are not authorized as a Franchise Operator. Please select "Customer" instead.');
           localStorage.removeItem('pendingRole');
+          setLoading(false);
           return;
         }
         
         if (selectedRole === 'RegisteredCustomer' && actualUserRole === 'FranchiseOperator') {
           setError('You are a Franchise Operator. Please select "Franchise Owner" to access your dashboard.');
           localStorage.removeItem('pendingRole');
+          setLoading(false);
           return;
         }
         
-        // Role validation passed, redirect based on selected role
-        console.log('Role validation passed, redirecting to:', selectedRole === 'FranchiseOperator' ? 'dashboard' : 'customer-home');
+        console.log('Role validation passed, redirecting to:', selectedRole === 'FranchiseOperator' ? 'dashboard' : 'home');
+        localStorage.removeItem('pendingRole');
         if (selectedRole === 'FranchiseOperator') {
-          navigate('/franchise-dashboard');
+          navigate('/franchise-dashboard', { replace: true });
         } else {
-          navigate('/customer-home');
+          navigate('/', { replace: true });
         }
       }
-      // If result.type exists, it means we have a challenge, useEffect will handle redirect
     } catch (err) {
       console.error(err);
       if (err.code === 'UserNotConfirmedException') {
@@ -88,35 +83,33 @@ export default function LoginPage() {
     }
   };
 
-  // Helper function to validate user's actual role
   const validateUserRole = async (email) => {
     try {
-      // Get the user's token to check their actual groups
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.idToken) {
-        // Decode the token to check groups
-        const parts = user.idToken.split('.');
+      const userData = user || JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('Validating user role, user data:', userData);
+      if (userData.idToken) {
+        const parts = userData.idToken.split('.');
         if (parts.length === 3) {
           let payload = parts[1];
-          // Add padding if necessary
+          payload = payload.replace(/-/g, '+').replace(/_/g, '/');
           while (payload.length % 4) {
             payload += '=';
           }
           
           const decodedPayload = JSON.parse(atob(payload));
-          const groups = decodedPayload['cognito:groups'];
-          const customRole = decodedPayload['custom:role'];
+          console.log('User groups from token:', decodedPayload['cognito:groups']);
+          console.log('User custom role from token:', decodedPayload['custom:role']);
           
-          console.log('User groups from token:', groups);
-          console.log('User custom role from token:', customRole);
-          
-          // Check if user is in FranchiseOperator group
-          if (Array.isArray(groups) && groups.includes('FranchiseOperator')) {
+          if (Array.isArray(decodedPayload['cognito:groups']) && decodedPayload['cognito:groups'].includes('FranchiseOperator')) {
             return 'FranchiseOperator';
-          } else if (customRole === 'FranchiseOperator') {
+          } else if (decodedPayload['custom:role'] === 'FranchiseOperator') {
             return 'FranchiseOperator';
           }
+        } else {
+          console.warn('Invalid idToken format:', parts);
         }
+      } else {
+        console.warn('No idToken in user data');
       }
       return 'RegisteredCustomer';
     } catch (error) {
@@ -128,16 +121,17 @@ export default function LoginPage() {
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h2>Login to DALScooter</h2>
-        {error && <p className="error">{error}</p>}
-        <form onSubmit={handleSubmit}>
+      <div className="login-container">
+        <h2 className="login-title">Login to DALScooter</h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit} className="login-form">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            className="login-input"
           />
           <input
             type="password"
@@ -145,59 +139,39 @@ export default function LoginPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            className="login-input"
           />
           
-          {/* Role Selection */}
-          <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#495057' }}>
-              I am logging in as:
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                backgroundColor: selectedRole === 'RegisteredCustomer' ? '#e3f2fd' : 'transparent',
-                border: selectedRole === 'RegisteredCustomer' ? '2px solid #2196f3' : '2px solid transparent'
-              }}>
+          <div className="role-selection">
+            <label className="role-label">I am logging in as:</label>
+            <div className="role-options">
+              <label className={`role-option ${selectedRole === 'RegisteredCustomer' ? 'customer-selected' : ''}`}>
                 <input
                   type="radio"
                   name="role"
                   value="RegisteredCustomer"
                   checked={selectedRole === 'RegisteredCustomer'}
                   onChange={e => setSelectedRole(e.target.value)}
-                  style={{ marginRight: '0.75rem', transform: 'scale(1.2)' }}
                 />
                 <div>
-                  <div style={{ fontWeight: '600', color: '#2c3e50' }}>Customer</div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                  <div className="role-title">Customer</div>
+                  <div className="role-description">
                     Book bikes, view availability, track rides
                   </div>
                 </div>
               </label>
               
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                backgroundColor: selectedRole === 'FranchiseOperator' ? '#e8f5e8' : 'transparent',
-                border: selectedRole === 'FranchiseOperator' ? '2px solid #4caf50' : '2px solid transparent'
-              }}>
+              <label className={`role-option ${selectedRole === 'FranchiseOperator' ? 'franchise-selected' : ''}`}>
                 <input
                   type="radio"
                   name="role"
                   value="FranchiseOperator"
                   checked={selectedRole === 'FranchiseOperator'}
                   onChange={e => setSelectedRole(e.target.value)}
-                  style={{ marginRight: '0.75rem', transform: 'scale(1.2)' }}
                 />
                 <div>
-                  <div style={{ fontWeight: '600', color: '#2c3e50' }}>Franchise Owner</div>
-                  <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                  <div className="role-title">Franchise Owner</div>
+                  <div className="role-description">
                     Manage inventory, update pricing, view analytics
                   </div>
                 </div>
@@ -208,26 +182,15 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            style={{
-              background: selectedRole === 'FranchiseOperator' ? '#4caf50' : '#2196f3',
-              transition: 'all 0.3s ease'
-            }}
+            className={`login-button ${selectedRole === 'FranchiseOperator' ? 'franchise' : ''}`}
           >
             {loading ? 'Logging in…' : `Login as ${selectedRole === 'FranchiseOperator' ? 'Franchise Owner' : 'Customer'}`}
           </button>
         </form>
         
-        <div style={{ 
-          marginTop: '1.5rem', 
-          padding: '1rem', 
-          backgroundColor: '#fff3cd', 
-          borderRadius: '8px', 
-          fontSize: '0.9rem', 
-          color: '#856404',
-          border: '1px solid #ffeaa7'
-        }}>
-          <p style={{ margin: 0, fontWeight: '600' }}>💡 Choose the right role:</p>
-          <ul style={{ marginLeft: '1rem', marginTop: '0.5rem', marginBottom: 0 }}>
+        <div className="info-box">
+          <p className="info-title">💡 Choose the right role:</p>
+          <ul className="info-list">
             <li><strong>Customer:</strong> If you want to rent bikes and scooters</li>
             <li><strong>Franchise Owner:</strong> If you manage bike inventory and operations</li>
           </ul>

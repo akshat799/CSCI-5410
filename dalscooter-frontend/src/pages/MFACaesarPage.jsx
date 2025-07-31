@@ -2,52 +2,59 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import '../styles/MFACaesarPage.css';
 
 export default function MFACaesarPage() {
   const navigate = useNavigate();
-  const { respondChallenge, challengeParams, clearChallengeParams } = useAuth();
+  const { respondChallenge, challengeParams, clearChallengeParams, user } = useAuth();
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
+    const storedRole = localStorage.getItem('pendingRole');
+    console.log('MFA Caesar page loaded, stored role:', storedRole);
+
     if (!challengeParams || challengeParams.challenge_type !== 'CAESAR') {
-      clearChallengeParams();
-      navigate('/login');
+      if (!hasNavigated) {
+        console.log('Invalid challenge, redirecting to login');
+        clearChallengeParams();
+        localStorage.removeItem('pendingRole');
+        navigate('/login', { replace: true });
+      }
     }
-  }, [challengeParams, navigate, clearChallengeParams]);
+  }, [challengeParams, navigate, hasNavigated, clearChallengeParams]);
 
   const cipher = challengeParams?.ciphertext || '';
 
-  // Helper function to validate user's actual role
   const validateUserRole = async () => {
     try {
-      // Get the user's token to check their actual groups
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.idToken) {
-        // Decode the token to check groups
-        const parts = user.idToken.split('.');
+      const userData = user || JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('Validating user role, user data:', userData);
+      if (userData.idToken) {
+        const parts = userData.idToken.split('.');
         if (parts.length === 3) {
           let payload = parts[1];
-          // Add padding if necessary
+          payload = payload.replace(/-/g, '+').replace(/_/g, '/');
           while (payload.length % 4) {
             payload += '=';
           }
           
           const decodedPayload = JSON.parse(atob(payload));
-          const groups = decodedPayload['cognito:groups'];
-          const customRole = decodedPayload['custom:role'];
+          console.log('User groups from token:', decodedPayload['cognito:groups']);
+          console.log('User custom role from token:', decodedPayload['custom:role']);
           
-          console.log('User groups from token:', groups);
-          console.log('User custom role from token:', customRole);
-          
-          // Check if user is in FranchiseOperator group
-          if (Array.isArray(groups) && groups.includes('FranchiseOperator')) {
+          if (Array.isArray(decodedPayload['cognito:groups']) && decodedPayload['cognito:groups'].includes('FranchiseOperator')) {
             return 'FranchiseOperator';
-          } else if (customRole === 'FranchiseOperator') {
+          } else if (decodedPayload['custom:role'] === 'FranchiseOperator') {
             return 'FranchiseOperator';
           }
+        } else {
+          console.warn('Invalid idToken format:', parts);
         }
+      } else {
+        console.warn('No idToken in user data');
       }
       return 'RegisteredCustomer';
     } catch (error) {
@@ -65,57 +72,57 @@ export default function MFACaesarPage() {
       console.log('Caesar Challenge result:', result);
       
       if (result && result.success) {
-        // Get selected role and validate against actual role
         const urlParams = new URLSearchParams(window.location.search);
         const urlRole = urlParams.get('role');
         const storedRole = localStorage.getItem('pendingRole');
-        const selectedRole = urlRole || storedRole || 'RegisteredCustomer';
-        
-        // Validate user's actual role
-        const actualUserRole = await validateUserRole();
+        const selectedRole = result.role || storedRole || urlRole || 'RegisteredCustomer';
         
         console.log('Selected role:', selectedRole);
+        console.log('URL role:', urlRole, 'Stored role:', storedRole, 'Result role:', result.role);
+        
+        const actualUserRole = await validateUserRole();
         console.log('Actual user role:', actualUserRole);
         
-        // Role validation
         if (selectedRole === 'FranchiseOperator' && actualUserRole !== 'FranchiseOperator') {
           setError('Access denied. You are not authorized as a Franchise Operator.');
           localStorage.removeItem('pendingRole');
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => navigate('/login', { replace: true }), 3000);
+          setLoading(false);
           return;
         }
         
         if (selectedRole === 'RegisteredCustomer' && actualUserRole === 'FranchiseOperator') {
           setError('You are a Franchise Operator. Please login again and select "Franchise Owner".');
           localStorage.removeItem('pendingRole');
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => navigate('/login', { replace: true }), 3000);
+          setLoading(false);
           return;
         }
         
-        // Role validation passed, redirect
-        if (selectedRole === 'FranchiseOperator') {
-          navigate('/franchise-dashboard');
-        } else {
-          navigate('/customer-home');
-        }
-        
-        // Clean up
+        setHasNavigated(true);
         localStorage.removeItem('pendingRole');
+        if (selectedRole === 'FranchiseOperator') {
+          navigate('/franchise-dashboard', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       } else {
         setError('Incorrect decryption. Redirecting to login...');
+        setHasNavigated(true);
         setTimeout(() => {
           clearChallengeParams();
           localStorage.removeItem('pendingRole');
-          navigate('/login');
+          navigate('/login', { replace: true });
         }, 5000);
       }
     } catch (err) {
       console.error(err);
       setError('Verification failed. Redirecting to login...');
-      setTimeout(() =>{
+      setHasNavigated(true);
+      setTimeout(() => {
         clearChallengeParams();
         localStorage.removeItem('pendingRole');
-        navigate('/login');
+        navigate('/login', { replace: true });
       }, 5000);
     } finally {
       setLoading(false);
@@ -125,25 +132,23 @@ export default function MFACaesarPage() {
   return (
     <>
       <Navbar />
-      <div className="container max-w-md mx-auto bg-white shadow-md rounded p-6">
-        <h2 className="text-2xl font-bold mb-4">Decryption Challenge</h2>
-        <p className="text-gray-600 mb-2">Decrypt the following cipher:</p>
-        <pre className="bg-gray-100 p-3 rounded text-sm mb-4">{cipher}</pre>
-
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="mfa-caesar-container">
+        <h2 className="mfa-caesar-title">Decryption Challenge</h2>
+        <p className="mfa-caesar-text">Decrypt the following cipher:</p>
+        <pre className="mfa-caesar-cipher">{cipher}</pre>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit} className="mfa-caesar-form">
           <input
             type="text"
             placeholder="Your Answer"
             value={answer}
             onChange={e => setAnswer(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="mfa-caesar-input"
             required
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            className="mfa-caesar-button"
             disabled={loading}
           >
             {loading ? 'Verifying…' : 'Submit'}

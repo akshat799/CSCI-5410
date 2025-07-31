@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/NavBar';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
-
+import BookSlotModal from '../components/BookSlotModal';
+import ViewBookingsModal from '../components/ViewBookingsModal';
+import '../styles/HomePage.css';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ function HomePage() {
   const [error, setError] = useState('');
   const [filterType, setFilterType] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [showBookingsModal, setShowBookingsModal] = useState(false);
+  const [selectedBikeId, setSelectedBikeId] = useState('');
 
   useEffect(() => {
     loadPublicBikes();
@@ -23,10 +28,9 @@ function HomePage() {
     setError('');
     try {
       const filters = {
-        status: 'available', 
-        ...(filterType && { type: filterType })
+        status: 'available',
+        ...(filterType && { type: filterType }),
       };
-      
       const data = await apiService.getPublicBikes(filters);
       setBikes(data.bikes || []);
     } catch (err) {
@@ -49,212 +53,184 @@ function HomePage() {
     }
   };
 
-  const handleBookNow = (bike) => {
+  const handleBookNow = (bikeId) => {
     if (!user) {
-      // Redirect to login if not authenticated
-      navigate('/login', { 
-        state: { 
+      navigate('/login', {
+        state: {
           message: 'Please login to book a bike',
           returnUrl: '/',
-          bikeId: bike.bike_id 
-        }
+          bikeId,
+        },
       });
     } else {
-      // Navigate to booking page or show booking modal
-      navigate('/book-bike', { state: { bike } });
+      setSelectedBikeId(bikeId);
+      setShowBookModal(true);
     }
   };
 
-  const filteredBikes = bikes.filter(bike => 
-    !searchLocation || 
-    bike.location.toLowerCase().includes(searchLocation.toLowerCase())
+  const filteredBikes = bikes.filter((bike) =>
+    !searchLocation || bike.location.toLowerCase().includes(searchLocation.toLowerCase())
   );
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
+      <div className="home-container">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white py-16">
-          <div className="container max-w-6xl mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Welcome to <span style={{ color: '#32746D' }}>DALScooter</span>
+        <div className="hero-section">
+          <div className="container">
+            <h1 className="hero-title">
+              Welcome to <span>DALScooter</span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8">
-              Book and ride eco-friendly scooters across campus using secure authentication
+            <p className="hero-subtitle">
+              Book and ride eco-friendly scooters across campus with secure authentication
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="hero-buttons">
               {!user ? (
                 <>
                   <button
                     onClick={() => navigate('/register')}
-                    className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                    className="glass-button border"
                   >
                     Get Started
                   </button>
                   <button
                     onClick={() => navigate('/login')}
-                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+                    className="glass-button border"
                   >
                     Login
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => navigate('/customer-home')}
-                  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                >
-                  Go to Dashboard
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate('/feedback')}
+                    className="glass-button"
+                  >
+                    Go to Issues Page
+                  </button>
+                  <button
+                    onClick={() => setShowBookingsModal(true)}
+                    className="glass-button"
+                  >
+                    View My Bookings
+                  </button>
+                </>
               )}
             </div>
           </div>
         </div>
 
         {/* Available Bikes Section */}
-        <div className="container max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Available Bikes & Scooters</h2>
-            <p className="text-gray-600 text-lg">Choose from our eco-friendly fleet</p>
-          </div>
+        <div className="bikes-section">
+          <div className="section-title">Available Bikes & Scooters</div>
+          <div className="section-subtitle">Choose from our eco-friendly fleet</div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setFilterType('')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === ''
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  All Types ({bikes.length})
-                </button>
-                <button
-                  onClick={() => setFilterType('eBike')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === 'eBike'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  🚴 eBikes ({bikes.filter(b => b.type === 'eBike').length})
-                </button>
-                <button
-                  onClick={() => setFilterType('Gyroscooter')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === 'Gyroscooter'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  🛴 Gyroscooters ({bikes.filter(b => b.type === 'Gyroscooter').length})
-                </button>
-                <button
-                  onClick={() => setFilterType('Segway')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filterType === 'Segway'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  🛴 Segways ({bikes.filter(b => b.type === 'Segway').length})
-                </button>
-              </div>
-
-              <div className="relative w-full lg:w-64">
-                <input
-                  type="text"
-                  placeholder="Search by location..."
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+          <div className="filter-container">
+            <div className="filter-buttons">
+              <button
+                onClick={() => setFilterType('')}
+                className={`filter-button ${filterType === '' ? 'active' : ''}`}
+              >
+                All Types ({bikes.length})
+              </button>
+              <button
+                onClick={() => setFilterType('eBike')}
+                className={`filter-button ${filterType === 'eBike' ? 'active' : ''}`}
+              >
+                🚴 eBikes ({bikes.filter((b) => b.type === 'eBike').length})
+              </button>
+              <button
+                onClick={() => setFilterType('Gyroscooter')}
+                className={`filter-button ${filterType === 'Gyroscooter' ? 'active' : ''}`}
+              >
+                🛴 Gyroscooters ({bikes.filter((b) => b.type === 'Gyroscooter').length})
+              </button>
+              <button
+                onClick={() => setFilterType('Segway')}
+                className={`filter-button ${filterType === 'Segway' ? 'active' : ''}`}
+              >
+                🛴 Segways ({bikes.filter((b) => b.type === 'Segway').length})
+              </button>
+            </div>
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search by location..."
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="search-input"
+              />
             </div>
           </div>
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="error-card">
+              <p className="error-text">{error}</p>
             </div>
           )}
 
           {/* Loading State */}
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <p className="text-gray-600">Loading available bikes...</p>
+            <div className="loading-container">
+              <div className="spinner"></div>
+              <p className="loading-text">Loading available bikes...</p>
             </div>
           ) : filteredBikes.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🚲</div>
-              <p className="text-gray-500 text-lg mb-2">No bikes available</p>
-              <p className="text-gray-400">
+            <div className="no-bikes-container">
+              <div className="no-bikes-icon">🚲</div>
+              <p className="no-bikes-text">No bikes available</p>
+              <p className="no-bikes-subtext">
                 {searchLocation ? 'Try searching in a different location' : 'Check back later for new availability'}
               </p>
             </div>
           ) : (
             /* Bikes Grid */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bikes-grid">
               {filteredBikes.map((bike) => (
-                <div
-                  key={bike.bike_id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{getTypeIcon(bike.type)}</span>
+                <div key={bike.bike_id} className="bike-card">
+                  <div className="bike-card-content">
+                    <div className="bike-header">
+                      <div className="bike-info">
+                        <span className="bike-icon">{getTypeIcon(bike.type)}</span>
                         <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">{bike.type}</h3>
-                          <p className="text-sm text-gray-500">{bike.access_code}</p>
+                          <h3 className="bike-title">{bike.type}</h3>
+                          <p className="bike-code">{bike.access_code}</p>
                         </div>
                       </div>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                        Available
-                      </span>
+                      <span className="status-badge">Available</span>
                     </div>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="bike-details">
+                      <div className="detail-item">
                         <span>📍</span>
                         {bike.location}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="detail-item">
                         <span>💰</span>
                         ${bike.hourly_rate}/hour
                       </div>
                       {bike.discount_code && (
-                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          🎫 {bike.discount_code}
-                        </div>
+                        <div className="discount-badge">🎫 {bike.discount_code}</div>
                       )}
                     </div>
 
                     {/* Features */}
                     {bike.features && Object.keys(bike.features).length > 0 && (
-                      <div className="mb-4">
-                        <div className="flex flex-wrap gap-1">
+                      <div className="features-container">
+                        <div className="features-list">
                           {Object.entries(bike.features).map(([key, value]) => {
                             if (typeof value === 'boolean' && value) {
                               return (
-                                <span
-                                  key={key}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                >
+                                <span key={key} className="feature-badge">
                                   {key.replace(/_/g, ' ')}
                                 </span>
                               );
                             } else if (typeof value === 'string' && value) {
                               return (
-                                <span
-                                  key={key}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                                >
+                                <span key={key} className="feature-badge gray">
                                   {key.replace(/_/g, ' ')}: {value}
                                 </span>
                               );
@@ -266,8 +242,8 @@ function HomePage() {
                     )}
 
                     <button
-                      onClick={() => handleBookNow(bike)}
-                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                      onClick={() => handleBookNow(bike.bike_id)}
+                      className="book-button"
                     >
                       {user ? 'Book Now' : 'Login to Book'}
                     </button>
@@ -279,30 +255,42 @@ function HomePage() {
         </div>
 
         {/* Features Section */}
-        <div className="bg-white py-16">
-          <div className="container max-w-6xl mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose DALScooter?</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="text-4xl mb-4">🔒</div>
-                <h3 className="text-xl font-semibold mb-2">Secure Authentication</h3>
-                <p className="text-gray-600">Multi-factor authentication ensures your account is always protected</p>
+        <div className="features-section">
+          <div className="container">
+            <div className="section-title">Why Choose DALScooter?</div>
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">🔒</div>
+                <h3 className="feature-title">Secure Authentication</h3>
+                <p className="feature-text">
+                  Multi-factor authentication ensures your account is always protected
+                </p>
               </div>
-              <div className="text-center">
-                <div className="text-4xl mb-4">🌱</div>
-                <h3 className="text-xl font-semibold mb-2">Eco-Friendly</h3>
-                <p className="text-gray-600">Electric bikes and scooters for sustainable campus transportation</p>
+              <div className="feature-card">
+                <div className="feature-icon">🌱</div>
+                <h3 className="feature-title">Eco-Friendly</h3>
+                <p className="feature-text">
+                  Electric bikes and scooters for sustainable campus transportation
+                </p>
               </div>
-              <div className="text-center">
-                <div className="text-4xl mb-4">📱</div>
-                <h3 className="text-xl font-semibold mb-2">Easy Booking</h3>
-                <p className="text-gray-600">Simple online booking with instant access codes</p>
+              <div className="feature-card">
+                <div className="feature-icon">📱</div>
+                <h3 className="feature-title">Easy Booking</h3>
+                <p className="feature-text">
+                  Simple online booking with instant access codes
+                </p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Modals */}
+        {showBookModal && (
+          <BookSlotModal bikeId={selectedBikeId} onClose={() => setShowBookModal(false)} />
+        )}
+        {showBookingsModal && (
+          <ViewBookingsModal onClose={() => setShowBookingsModal(false)} />
+        )}
       </div>
     </>
   );

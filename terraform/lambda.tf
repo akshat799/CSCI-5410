@@ -8,6 +8,7 @@ locals {
     bike_management       = "${path.module}/../lambda-functions/bike_management.py"  
     get_bikes_public      = "${path.module}/../lambda-functions/get_bikes_public.py"
     feedback_management   = "${path.module}/../lambda-functions/feedback_management.py"
+    record_logout         = "${path.module}/../lambda-functions/record_logout.py"
   }
 }
 
@@ -22,15 +23,18 @@ resource "aws_lambda_function" "lambda" {
   for_each         = data.archive_file.lambda_zips
   function_name    = each.key == "notification_consumer" ? "notificationConsumer" : each.key
   filename         = each.value.output_path
-  handler          = "${replace(each.key, "_check", "")}.lambda_handler"
+  handler          = "${each.key}.lambda_handler"
   runtime          = "python3.9"
   role             = aws_iam_role.lambda_role.arn
   source_code_hash = each.value.output_base64sha256
+  timeout          = 30
 
   environment {
     variables = each.key == "notification_consumer" ? {
       SES_FROM_ADDRESS = "csci5408@gmail.com"
       SES_TEMPLATE_NAME = "NotificationTemplate"
+    } : each.key == "record_logout" ? {
+      LOGINS_TABLE = aws_dynamodb_table.logins.name
     } : {
       REGISTRATION_TOPIC_ARN = aws_sns_topic.registration_topic.arn
       LOGIN_TOPIC_ARN        = aws_sns_topic.login_topic.arn

@@ -22,7 +22,6 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_exec_mfa" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-
 resource "aws_lambda_permission" "define_auth_permission" {
   statement_id  = "AllowCognitoDefineAuth"
   action        = "lambda:InvokeFunction"
@@ -140,6 +139,43 @@ resource "aws_iam_role_policy" "lambda_comprehend_access" {
           "comprehend:DetectEntities"
         ],
         Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_invoke_record_logout" {
+  name = "LambdaInvokeRecordLogout"
+  role = aws_iam_role.lambda_role.name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "lambda:InvokeFunction",
+        Resource = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:record_logout"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_logins_table_access" {
+  name = "LambdaLoginsTableAccess"
+  role = aws_iam_role.lambda_role.name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ],
+        Resource = [
+          aws_dynamodb_table.logins.arn,
+          "${aws_dynamodb_table.logins.arn}/index/*"
+        ]
       }
     ]
   })

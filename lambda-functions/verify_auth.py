@@ -1,10 +1,13 @@
+import datetime
 import os
 import json
+import uuid
 import boto3
 
 dynamodb     = boto3.resource('dynamodb')
 qa_table     = dynamodb.Table('SecurityQA')
 caesar_table = dynamodb.Table('CaesarChallenge')
+logins_table = dynamodb.Table('Logins')
 
 sns_client   = boto3.client('sns')
 LOGIN_TOPIC  = os.environ.get('LOGIN_TOPIC_ARN')
@@ -29,6 +32,22 @@ def lambda_handler(event, context):
 
     if metadata.get('challenge_type') == 'CAESAR' and passed and LOGIN_TOPIC:
         email   = event['request']['userAttributes'].get('email')
+
+        # Record login event in Logins table
+        try:
+            login_id = f"login-{user_id}-{datetime.utcnow().timestamp()}"
+            logins_table.put_item(
+                Item={
+                    'login_id': login_id,
+                    'login_timestamp': datetime.utcnow().isoformat(),
+                    'user_id': user_id,
+                    'email': email,
+                    'event_type': 'login',
+                }
+            )
+        except Exception as e:
+            print(f"Error writing to Logins table: {e}")
+
         payload = {
             'email':   email,
             'subject': 'Welcome Back to DALScooter!',

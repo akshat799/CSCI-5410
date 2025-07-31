@@ -48,6 +48,101 @@ resource "aws_api_gateway_resource" "feedback_bike" {
   path_part   = "{bike_id}"
 }
 
+# LOGOUT RESOURCE
+resource "aws_api_gateway_resource" "logout" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  parent_id   = aws_api_gateway_rest_api.bike_api.root_resource_id
+  path_part   = "logout"
+}
+
+# POST /logout
+resource "aws_api_gateway_method" "logout_post" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.logout.id
+  http_method   = "POST"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+resource "aws_api_gateway_integration" "logout_post_lambda" {
+  rest_api_id             = aws_api_gateway_rest_api.bike_api.id
+  resource_id             = aws_api_gateway_resource.logout.id
+  http_method             = aws_api_gateway_method.logout_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.lambda["record_logout"].invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "logout_post" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# CORS for /logout
+resource "aws_api_gateway_method" "logout_options" {
+  rest_api_id   = aws_api_gateway_rest_api.bike_api.id
+  resource_id   = aws_api_gateway_resource.logout.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "logout_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+  }
+}
+
+resource "aws_api_gateway_method_response" "logout_options" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_options" {
+  depends_on = [aws_api_gateway_integration.logout_options]
+
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_options.http_method
+  status_code = aws_api_gateway_method_response.logout_options.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
+# Lambda Permission for /logout
+resource "aws_lambda_permission" "logout_post_permission" {
+  statement_id  = "AllowAPIGatewayInvokeLogout"
+  action        = "lambda:InvokeFunction"
+  function_name = "record_logout"
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.bike_api.execution_arn}/*/POST/logout"
+}
+
+
 # ===== BIKE METHODS =====
 
 # POST /bikes (create bike) - WITH COGNITO AUTH
@@ -561,7 +656,9 @@ resource "aws_api_gateway_deployment" "bike_api" {
     aws_api_gateway_method_response.get_public_bikes,
     aws_api_gateway_method_response.submit_feedback,
     aws_api_gateway_method_response.get_feedback,
-    aws_api_gateway_method_response.get_bike_feedback
+    aws_api_gateway_method_response.get_bike_feedback,
+    aws_api_gateway_integration.logout_post_lambda,
+    aws_api_gateway_integration_response.logout_options
   ]
 
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
@@ -573,6 +670,7 @@ resource "aws_api_gateway_deployment" "bike_api" {
       aws_api_gateway_resource.public_bikes.id,
       aws_api_gateway_resource.feedback.id,
       aws_api_gateway_resource.feedback_bike.id,
+      aws_api_gateway_resource.logout.id,
       aws_api_gateway_method.create_bike.id,
       aws_api_gateway_method.get_bikes.id,
       aws_api_gateway_method.update_bike.id,
@@ -581,6 +679,8 @@ resource "aws_api_gateway_deployment" "bike_api" {
       aws_api_gateway_method.submit_feedback.id,
       aws_api_gateway_method.get_feedback.id,
       aws_api_gateway_method.get_bike_feedback.id,
+      aws_api_gateway_method.logout_post.id,
+      aws_api_gateway_method.logout_options.id,
       aws_api_gateway_integration.create_bike.id,
       aws_api_gateway_integration.get_bikes.id,
       aws_api_gateway_integration.update_bike.id,
@@ -589,6 +689,8 @@ resource "aws_api_gateway_deployment" "bike_api" {
       aws_api_gateway_integration.submit_feedback.id,
       aws_api_gateway_integration.get_feedback.id,
       aws_api_gateway_integration.get_bike_feedback.id,
+      aws_api_gateway_integration.logout_post_lambda.id,
+      aws_api_gateway_integration.logout_options.id,
       aws_api_gateway_authorizer.cognito_authorizer.id,
     ]))
   }
@@ -635,11 +737,6 @@ resource "aws_lambda_permission" "feedback_api_gateway_lambda" {
   source_arn    = "${aws_api_gateway_rest_api.bike_api.execution_arn}/*/*"
 }
 
-# ===== DATA SOURCES =====
-
-# Data source for current region (fix for deprecated warning)
-data "aws_region" "current" {}
-
 # ===== OUTPUTS =====
 
 # Outputs with fixed region reference
@@ -659,6 +756,7 @@ output "api_endpoints" {
     "Submit Feedback"  = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback"
     "Get All Feedback" = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback"
     "Get Bike Feedback" = "GET https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/feedback/{bike_id}"
+    "Logout"           = "POST https://${aws_api_gateway_rest_api.bike_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/${aws_api_gateway_stage.bike_api_stage.stage_name}/logout"
   }
 }
 

@@ -39,3 +39,7 @@ resource "aws_dynamodb_table" "bookings" {
     write_capacity     = 0  # PAY_PER_REQUEST
   }
 }
+
+data "aws_dynamodb_table" "logins" {
+  name = "Logins"
+}

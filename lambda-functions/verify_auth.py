@@ -1,7 +1,6 @@
 import datetime
 import os
 import json
-import uuid
 import boto3
 
 dynamodb     = boto3.resource('dynamodb')
@@ -11,7 +10,6 @@ logins_table = dynamodb.Table('Logins')
 
 sns_client   = boto3.client('sns')
 LOGIN_TOPIC  = os.environ.get('LOGIN_TOPIC_ARN')
-
 
 def lambda_handler(event, context):
     user_id  = event['userName']
@@ -35,14 +33,14 @@ def lambda_handler(event, context):
 
         # Record login event in Logins table
         try:
-            login_id = f"login-{user_id}-{datetime.utcnow().timestamp()}"
+            login_id = f"login-{user_id}-{int(datetime.datetime.utcnow().timestamp())}"
             logins_table.put_item(
                 Item={
                     'login_id': login_id,
-                    'login_timestamp': datetime.utcnow().isoformat(),
+                    'login_timestamp': datetime.datetime.utcnow().isoformat(),
                     'user_id': user_id,
                     'email': email,
-                    'event_type': 'login',
+                    'event_type': 'login'
                 }
             )
         except Exception as e:

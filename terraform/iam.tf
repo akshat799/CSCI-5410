@@ -144,6 +144,37 @@ resource "aws_iam_role_policy" "lambda_comprehend_access" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_policy" {
+  name = "LambdaDynamoDBPolicy"
+  role = aws_iam_role.lambda_role.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = [
+          aws_dynamodb_table.logins.arn,
+          "${aws_dynamodb_table.logins.arn}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "lambda_invoke_record_logout" {
   name = "LambdaInvokeRecordLogout"
   role = aws_iam_role.lambda_role.name

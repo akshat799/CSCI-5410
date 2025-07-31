@@ -7,156 +7,133 @@ import {
 } from 'amazon-cognito-identity-js';
 
 const AuthContext = createContext();
-const poolData    = {
+const poolData = {
   UserPoolId: import.meta.env.VITE_USER_POOL_ID,
-  ClientId:   import.meta.env.VITE_CLIENT_ID
+  ClientId: import.meta.env.VITE_CLIENT_ID
 };
 const userPool = new CognitoUserPool(poolData);
 
 export function AuthProvider({ children }) {
-  const [user,        setUser]        = useState(() => JSON.parse(localStorage.getItem('user')) || null);
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || null);
   const [pendingUser, setPendingUser] = useState(null);
   const [challengeParams, setChallengeParams] = useState(null);
-  const [selectedRole, setSelectedRole] = useState(null); // Add this
+  const [selectedRole, setSelectedRole] = useState(() => localStorage.getItem('pendingRole') || null);
 
   const clearChallengeParams = () => {
     setChallengeParams(null);
     setPendingUser(null);
-    setSelectedRole(null); // Clear selected role too
+    console.log('Cleared challenge params, preserving selectedRole:', localStorage.getItem('pendingRole'));
   };
 
-  // Helper function to get user role from token
-  const getUserRole = (session) => {
+  const extractGroups = (session) => {
     try {
       const idToken = session.getIdToken().getJwtToken();
-      console.log('ID Token:', idToken); // Debug log
-      
-      // Fix: Handle URL encoding in JWT token
+      console.log('Raw idToken:', idToken);
+      if (!idToken) {
+        console.warn('No idToken in session');
+        return { groups: [], customRole: null };
+      }
       const parts = idToken.split('.');
       if (parts.length !== 3) {
-        console.error('Invalid JWT token format');
-        return 'RegisteredCustomer';
+        console.warn('Invalid idToken format, parts:', parts);
+        return { groups: [], customRole: null };
       }
-      
-      // Decode the payload with proper base64 padding
       let payload = parts[1];
-      // Add padding if necessary
-      while (payload.length % 4) {
+      payload = payload.replace(/-/g, '+').replace(/_/g, '/');
+      while (payload.length % 4 !== 0) {
         payload += '=';
       }
-      
-      const decodedPayload = JSON.parse(atob(payload));
-      console.log('Token payload:', decodedPayload); // Debug log
-      
-      const groups = decodedPayload['cognito:groups'];
-      console.log('Groups from token:', groups); // Debug log
-      
-      if (Array.isArray(groups)) {
-        if (groups.includes('FranchiseOperator')) {
-          return 'FranchiseOperator';
-        } else if (groups.includes('RegisteredCustomer')) {
-          return 'RegisteredCustomer';
-        }
-      } else if (typeof groups === 'string') {
-        if (groups === 'FranchiseOperator') {
-          return 'FranchiseOperator';
-        } else if (groups === 'RegisteredCustomer') {
-          return 'RegisteredCustomer';
-        }
-      }
-      
-      // Also check custom:role as fallback
-      const customRole = decodedPayload['custom:role'];
-      console.log('Custom role:', customRole); // Debug log
-      
-      if (customRole === 'FranchiseOperator') {
-        return 'FranchiseOperator';
-      }
-      
-      return 'RegisteredCustomer'; // Default
+      const decoded = JSON.parse(atob(payload));
+      const groups = decoded['cognito:groups'] || [];
+      const customRole = decoded['custom:role'] || null;
+      console.log('Extracted groups:', groups, 'customRole: ', customRole);
+      return { groups: Array.isArray(groups) ? groups : [groups], customRole };
     } catch (error) {
-      console.error('Error parsing token:', error);
-      return 'RegisteredCustomer';
+      console.error('Error extracting groups from token:', error);
+      return { groups: [], customRole: null };
     }
   };
 
   const register = ({ name, email, password, question, answer, role, caesarText, shiftKey }) => {
-
     return new Promise((res, rej) => {
       const attrs = [
         new CognitoUserAttribute({ Name: 'username', Value: email }),
         new CognitoUserAttribute({ Name: 'email', Value: email }),
         new CognitoUserAttribute({ Name: 'name', Value: name }),
-        new CognitoUserAttribute({ Name: 'custom:secQuestion',Value: question }),
-        new CognitoUserAttribute({ Name: 'custom:secAnswer',  Value: answer }),
-        new CognitoUserAttribute({ Name: 'custom:role',      Value: role }),
-        new CognitoUserAttribute({ Name: 'custom:plainText', Value: caesarText }),
-        new CognitoUserAttribute({ Name: 'custom:shiftKey',   Value: shiftKey })
+        new CognitoUserAttribute({ Name: 'custom:secQuestion', Value: question }),
+        new CognitoUserAttribute({ Name: 'custom:secAnswer', Value: answer }),
+        new CognitoUserAttribute({ Name: 'custom:role', Value: role }),
+        new CognitoUserAttribute({ Name: 'custom:caesarText', Value: caesarText }),
+        new CognitoUserAttribute({ Name: 'custom:shiftKey', Value: shiftKey })
       ];
       userPool.signUp(email, password, attrs, null, (err, result) => {
         if (err) rej(err);
-        else    res(result.user);
+        else res(result.user);
       });
     });
   };
 
   const confirmSignUp = ({ email, code }) => {
     return new Promise((res, rej) => {
-        console.log('Confirming signup for:', email, 'with code:', code, );
+      console.log('Confirming signup for:', email, 'with code:', code);
       const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
       cognitoUser.confirmRegistration(code, true, (err, result) => {
         if (err) rej(err);
-        else    res(result);
+        else res(result);
       });
     });
-  }
+  };
 
   const resendConfirmationCode = email => {
     return new Promise((res, rej) => {
       const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
       cognitoUser.resendConfirmationCode((err, result) => {
         if (err) rej(err);
-        else    res(result);
+        else res(result);
       });
     });
   };
 
-  const login = async({ email, password, role = null }) => {
-  return new Promise((res, rej) => {
-    const authDetails = new AuthenticationDetails({ Username: email, Password: password });
-    const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
+  const login = async ({ email, password, role = null }) => {
+    return new Promise((res, rej) => {
+      const authDetails = new AuthenticationDetails({ Username: email, Password: password });
+      const cognitoUser = new CognitoUser({ Username: email, Pool: userPool });
 
-    setPendingUser(cognitoUser);
-    setSelectedRole(role); // Store selected role
-    cognitoUser.setAuthenticationFlowType('CUSTOM_AUTH');
+      setPendingUser(cognitoUser);
+      setSelectedRole(role);
+      localStorage.setItem('pendingRole', role);
+      console.log('Login: Storing selectedRole:', role);
 
-    cognitoUser.authenticateUser(authDetails, {
-      onSuccess: session => {
-        const detectedRole = getUserRole(session);
-        const usr = { 
-          email, 
-          session, 
-          role: detectedRole,
-          selectedRole: role, // Store both detected and selected role
-          idToken: session.getIdToken().getJwtToken(),
-          accessToken: session.getAccessToken().getJwtToken(),
-          refreshToken: session.getRefreshToken().getToken()
-        };
-        setUser(usr);
-        localStorage.setItem('user', JSON.stringify(usr));
-        clearChallengeParams();
-        res({ success: true, role: detectedRole, selectedRole: role });
-      },
-      onFailure: err => rej(err),
-      customChallenge: params => {
-        setPendingUser(cognitoUser);
-        console.log('Custom challenge received:', params);
-        setChallengeParams(params);
-        res({type: params.challenge_type});
-      }
+      cognitoUser.setAuthenticationFlowType('CUSTOM_AUTH');
+
+      cognitoUser.authenticateUser(authDetails, {
+        onSuccess: session => {
+          const groups = extractGroups(session);
+          const usr = {
+            email,
+            session,
+            groups,
+            role: localStorage.getItem('pendingRole') || 'RegisteredCustomer',
+            idToken: session.getIdToken().getJwtToken(),
+            accessToken: session.getAccessToken().getJwtToken(),
+            refreshToken: session.getRefreshToken().getToken()
+          };
+
+          setUser(usr);
+          localStorage.setItem('user', JSON.stringify(usr));
+          console.log('Login success, user:', usr);
+          res({ success: true, role: usr.role });
+        },
+        onFailure: err => rej(err),
+        customChallenge: params => {
+          setPendingUser(cognitoUser);
+          console.log('Custom challenge received:', params);
+          setChallengeParams(params);
+          res({ type: params.challenge_type, role });
+        }
+      });
     });
-  });
-};
+  };
 
   const respondChallenge = ({ answer }) => {
     return new Promise((res, rej) => {
@@ -165,30 +142,33 @@ export function AuthProvider({ children }) {
       }
 
       const ans = String(answer).trim().toLowerCase();
+      const storedRole = localStorage.getItem('pendingRole');
+      console.log('Respond challenge, storedRole:', storedRole);
 
       pendingUser.sendCustomChallengeAnswer(ans, {
         onSuccess: session => {
           const username = pendingUser.getUsername();
-          const detectedRole = getUserRole(session);
-          const usr = { 
-            email: username, 
-            session, 
-            role: detectedRole,
-            selectedRole: selectedRole, // Use stored selected role
+          const groups = extractGroups(session);
+          const usr = {
+            email: username,
+            session,
+            groups,
+            role: storedRole || 'RegisteredCustomer',
             idToken: session.getIdToken().getJwtToken(),
             accessToken: session.getAccessToken().getJwtToken(),
             refreshToken: session.getRefreshToken().getToken()
           };
+
           setUser(usr);
           localStorage.setItem('user', JSON.stringify(usr));
-          clearChallengeParams();
-          res({ success: true, role: detectedRole, selectedRole: selectedRole }); 
+          console.log('Challenge success, user:', usr);
+          res({ success: true, role: usr.role });
         },
         onFailure: err => rej(err),
         customChallenge: (params) => {
           console.log('Custom challenge received:', params);
           setChallengeParams(params);
-          res({type: params.challenge_type});
+          res({ type: params.challenge_type, role: storedRole });
         }
       });
     });
@@ -200,8 +180,10 @@ export function AuthProvider({ children }) {
     setUser(null);
     clearChallengeParams();
     localStorage.removeItem('user');
+    localStorage.removeItem('pendingRole');
+    console.log('Logged out, cleared user and pendingRole');
   };
-  
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -213,7 +195,6 @@ export function AuthProvider({ children }) {
       logout,
       challengeParams,
       clearChallengeParams,
-      getUserRole,
       selectedRole
     }}>
       {children}

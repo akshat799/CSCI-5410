@@ -14,14 +14,18 @@
     "@aws-amplify/core": "^6.12.3",
     "@aws-amplify/ui-react": "^6.11.2",
     "@aws-sdk/client-cognito-identity-provider": "^3.840.0",
+    "@aws-sdk/client-lex-runtime-v2": "^3.848.0",
+    "@aws-sdk/credential-provider-cognito-identity": "^3.848.0",
     "@tailwindcss/vite": "^4.1.11",
     "amazon-cognito-identity-js": "^6.3.15",
     "aws-amplify": "^6.15.3",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.3"
+    "react-router-dom": "^7.6.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",

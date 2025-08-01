@@ -37,3 +37,5 @@ override.tf.json
 terraform.rc
 
 *.zip
+
+.terraform/providers/registry.terraform.io/hashicorp/aws/6.3.0/windows_386/terraform-provider-aws_v6.3.0_x5.exe

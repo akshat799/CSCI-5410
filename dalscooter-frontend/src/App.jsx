@@ -15,7 +15,7 @@ import BookingsPage from './pages/BookingsPage';
 import FranchiseAvailabilityDashboard from './pages/FranchiseAvailabilityDashboard';
 import ProfilePage from "./pages/ProfilePage";
 import Modal from 'react-modal';
-
+import ChatBot from './components/ChatBot';
 Modal.setAppElement('#root');
 
 

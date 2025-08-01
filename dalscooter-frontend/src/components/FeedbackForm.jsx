@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useAuth } from "../../../../../../../../../../../../Downloads/CSCI-5410-BA/dalscooter-frontend/src/context/AuthContext";
-import feedbackService from "../../../../../../../../../../../../Downloads/CSCI-5410-BA/dalscooter-frontend/src/services/feedbackService";
+import { useAuth } from "../context/AuthContext";
+import feedbackService from "../services/feedbackService";
 import { Star } from "lucide-react";
 import "../styles/FeedbackForm.css";
 

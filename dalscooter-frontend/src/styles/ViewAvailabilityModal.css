@@ -1,0 +1,183 @@
+.modal-content {
+  background-color: var(--white);
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  margin: 5rem auto;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.modal-content h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--gray-900);
+}
+
+.modal-message {
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.5rem;
+}
+
+.modal-message.error {
+  color: var(--red-600);
+}
+
+.slots-list {
+  margin-bottom: 1.5rem;
+}
+
+.slots-title {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--gray-700);
+}
+
+.slots-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.slot-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slot-item:last-child {
+  border-bottom: none;
+}
+
+.slot-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.slot-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  padding: 0.25rem 0.75rem;
+  background: var(--blue-600);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.edit-btn:hover {
+  background: var(--blue-700);
+}
+
+.edit-btn:disabled {
+  background: var(--blue-200);
+  cursor: not-allowed;
+}
+
+.delete-btn {
+  padding: 0.25rem 0.75rem;
+  background: var(--red-600);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.delete-btn:hover {
+  background: var(--red-700);
+}
+
+.delete-btn:disabled {
+  background: var(--red-200);
+  cursor: not-allowed;
+}
+
+.edit-slot-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.edit-input {
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  width: 5rem;
+}
+
+.save-btn {
+  padding: 0.25rem 0.75rem;
+  background: var(--green-600);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.save-btn:hover {
+  background: var(--green-700);
+}
+
+.cancel-btn {
+  padding: 0.25rem 0.75rem;
+  background: var(--gray-500);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.cancel-btn:hover {
+  background: var(--gray-600);
+}
+
+.loading {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-footer .close-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  background: var(--gray-200);
+}
+
+.modal-footer .close-btn:hover {
+  background: var(--gray-300);
+}

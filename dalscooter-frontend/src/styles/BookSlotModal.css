@@ -1,0 +1,117 @@
+.modal-content {
+  background-color: var(--white);
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  margin: 5rem auto;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.modal-content h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--gray-900);
+}
+
+.modal-message {
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.5rem;
+}
+
+.modal-message.error {
+  color: var(--red-600);
+}
+
+.modal-message.success {
+  color: var(--green-600);
+}
+
+.slots-list {
+  margin-bottom: 1.5rem;
+}
+
+.slots-title {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--gray-700);
+}
+
+.slots-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.slot-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: var(--font-size-sm);
+}
+
+.slot-item:last-child {
+  border-bottom: none;
+}
+
+.slot-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.book-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--blue-600);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.book-btn:hover {
+  background: var(--blue-700);
+}
+
+.book-btn:disabled {
+  background: var(--blue-200);
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-footer .close-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  background: var(--gray-200);
+}
+
+.modal-footer .close-btn:hover {
+  background: var(--gray-300);
+}

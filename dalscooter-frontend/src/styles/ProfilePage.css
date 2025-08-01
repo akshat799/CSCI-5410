@@ -1,0 +1,108 @@
+.profile-container {
+  min-height: 100vh;
+  background: linear-gradient(128deg, #e0eefd 0%, #f8fafc 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 64px;
+}
+
+/* Style the card */
+.profile-card {
+  background: #fff;
+  border-radius: 16px;
+  margin: 24px 0;
+  box-shadow: 0 2px 12px 0 rgba(70, 86, 114, 0.08);
+  padding: 32px 32px 24px 32px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  position: relative;
+}
+
+.profile-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1d3557;
+  letter-spacing: 0.01em;
+  margin-top: 0;
+}
+
+.profile-detail-row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-size: 1.08rem;
+  margin: 0.3em 0;
+}
+
+.profile-label {
+  font-weight: 600;
+  color: #457b9d;
+  min-width: 90px;
+}
+
+.profile-value {
+  font-family: 'Fira Mono', monospace, monospace;
+  color: #183153;
+  font-size: 1rem;
+}
+
+.profile-button {
+  background: #457b9d;
+  color: #fff;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 22px;
+  margin-bottom: 0;
+  transition: background 0.18s;
+  box-shadow: 0 1px 4px 0 rgba(120,150,180,0.11);
+}
+
+.profile-button.logout {
+  background: #e63946;
+  margin-top: 10px;
+}
+
+.profile-button:hover, .profile-button:focus {
+  background: #274a72;
+}
+
+.profile-tokens {
+  margin-top: 1.2em;
+  font-size: 0.98em;
+}
+
+.profile-tokens summary {
+  cursor: pointer;
+  color: #274a72;
+  font-weight: 600;
+  margin-bottom: 0.7em;
+  font-size: 1.04em;
+}
+
+.profile-tokens-inner {
+  background: #f6f9fd;
+  font-size: 0.92em;
+  border-radius: 6px;
+  padding: 8px 10px 12px 10px;
+  margin-top: 8px;
+  overflow-x: auto;
+  word-break: break-all;
+}
+
+.profile-token {
+  word-break: break-all;
+  font-family: 'Fira Mono', monospace, monospace;
+  background: #f1f4f8;
+  border-radius: 4px;
+  padding: 1px 4px;
+  color: #6b778d;
+}

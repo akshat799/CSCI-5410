@@ -78,9 +78,127 @@ resource "aws_api_gateway_method_response" "logout_post" {
   resource_id = aws_api_gateway_resource.logout.id
   http_method = aws_api_gateway_method.logout_post.http_method
   status_code = "200"
-
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_post" {
+  depends_on = [aws_api_gateway_integration.logout_post_lambda]
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = aws_api_gateway_method_response.logout_post.status_code
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "logout_post_400" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = "400"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_post_400" {
+  depends_on = [aws_api_gateway_integration.logout_post_lambda]
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = aws_api_gateway_method_response.logout_post_400.status_code
+  selection_pattern = ".*(Missing|Invalid).*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "logout_post_401" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = "401"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_post_401" {
+  depends_on = [aws_api_gateway_integration.logout_post_lambda]
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = aws_api_gateway_method_response.logout_post_401.status_code
+  selection_pattern = ".*Unauthorized.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "logout_post_403" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = "403"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_post_403" {
+  depends_on = [aws_api_gateway_integration.logout_post_lambda]
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = aws_api_gateway_method_response.logout_post_403.status_code
+  selection_pattern = ".*Forbidden.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "logout_post_500" {
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = "500"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "logout_post_500" {
+  depends_on = [aws_api_gateway_integration.logout_post_lambda]
+  rest_api_id = aws_api_gateway_rest_api.bike_api.id
+  resource_id = aws_api_gateway_resource.logout.id
+  http_method = aws_api_gateway_method.logout_post.http_method
+  status_code = aws_api_gateway_method_response.logout_post_500.status_code
+  selection_pattern = ".*Error.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
   }
 }
 
@@ -97,7 +215,6 @@ resource "aws_api_gateway_integration" "logout_options" {
   resource_id = aws_api_gateway_resource.logout.id
   http_method = aws_api_gateway_method.logout_options.http_method
   type        = "MOCK"
-
   request_templates = {
     "application/json" = jsonencode({
       statusCode = 200
@@ -110,7 +227,6 @@ resource "aws_api_gateway_method_response" "logout_options" {
   resource_id = aws_api_gateway_resource.logout.id
   http_method = aws_api_gateway_method.logout_options.http_method
   status_code = "200"
-
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = true
     "method.response.header.Access-Control-Allow-Methods" = true
@@ -120,12 +236,10 @@ resource "aws_api_gateway_method_response" "logout_options" {
 
 resource "aws_api_gateway_integration_response" "logout_options" {
   depends_on = [aws_api_gateway_integration.logout_options]
-
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
   resource_id = aws_api_gateway_resource.logout.id
   http_method = aws_api_gateway_method.logout_options.http_method
   status_code = aws_api_gateway_method_response.logout_options.status_code
-
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
@@ -658,11 +772,18 @@ resource "aws_api_gateway_deployment" "bike_api" {
     aws_api_gateway_method_response.get_feedback,
     aws_api_gateway_method_response.get_bike_feedback,
     aws_api_gateway_integration.logout_post_lambda,
-    aws_api_gateway_integration_response.logout_options
+    aws_api_gateway_integration_response.logout_options,
+    aws_api_gateway_integration_response.logout_post,
+    aws_api_gateway_method_response.logout_post_400,
+    aws_api_gateway_integration_response.logout_post_400,
+    aws_api_gateway_method_response.logout_post_401,
+    aws_api_gateway_integration_response.logout_post_401,
+    aws_api_gateway_method_response.logout_post_403,
+    aws_api_gateway_integration_response.logout_post_403,
+    aws_api_gateway_method_response.logout_post_500,
+    aws_api_gateway_integration_response.logout_post_500
   ]
-
   rest_api_id = aws_api_gateway_rest_api.bike_api.id
-
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.bikes.id,
@@ -691,10 +812,18 @@ resource "aws_api_gateway_deployment" "bike_api" {
       aws_api_gateway_integration.get_bike_feedback.id,
       aws_api_gateway_integration.logout_post_lambda.id,
       aws_api_gateway_integration.logout_options.id,
+      aws_api_gateway_integration_response.logout_post.id,
+      aws_api_gateway_method_response.logout_post_400.id,
+      aws_api_gateway_integration_response.logout_post_400.id,
+      aws_api_gateway_method_response.logout_post_401.id,
+      aws_api_gateway_integration_response.logout_post_401.id,
+      aws_api_gateway_method_response.logout_post_403.id,
+      aws_api_gateway_integration_response.logout_post_403.id,
+      aws_api_gateway_method_response.logout_post_500.id,
+      aws_api_gateway_integration_response.logout_post_500.id,
       aws_api_gateway_authorizer.cognito_authorizer.id,
     ]))
   }
-
   lifecycle {
     create_before_destroy = true
   }

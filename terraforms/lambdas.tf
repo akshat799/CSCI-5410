@@ -8,6 +8,7 @@ locals {
     update_availability   = "${path.module}/../lambda/update_availability.py"
     get_embed_url         = "${path.module}/../lambda/get_embed_url.py"
     sync_quicksight_users = "${path.module}/../lambda/sync_quicksight_users.py"
+    export_dynamodb_to_s3 = "${path.module}/../lambda/export_dynamodb_to_s3.py"
   }
 }
 
@@ -24,14 +25,15 @@ resource "aws_lambda_function" "lambda" {
   filename         = each.value.output_path
   handler          = "${each.key}.lambda_handler"
   runtime          = "python3.9"
-  role             = contains(["get_embed_url", "sync_quicksight_users"], each.key) ? aws_iam_role.lambda_quicksight_role.arn : aws_iam_role.lambda_role.arn
+  role             = contains(["get_embed_url", "sync_quicksight_users", "export_dynamodb_to_s3"], each.key) ? aws_iam_role.lambda_quicksight_role.arn : aws_iam_role.lambda_role.arn
   source_code_hash = each.value.output_base64sha256
   timeout          = 30
 
   environment {
-    variables = contains(["get_embed_url", "sync_quicksight_users"], each.key) ? {
+    variables = contains(["get_embed_url", "sync_quicksight_users", "export_dynamodb_to_s3"], each.key) ? {
       USER_POOL_ID   = data.aws_cognito_user_pool.main.id
       AWS_ACCOUNT_ID = data.aws_caller_identity.current.account_id
+      ANALYTICS_BUCKET = aws_s3_bucket.analytics_bucket.bucket
     } : {}
   }
 }
@@ -50,10 +52,23 @@ resource "aws_cloudwatch_event_rule" "cognito_group_change" {
   })
 }
 
+resource "aws_cloudwatch_event_rule" "export_dynamodb_schedule" {
+  name                = "ExportDynamoDBToS3"
+  description         = "Trigger DynamoDB export to S3 daily"
+
+  schedule_expression = "cron(0 0,6,12,18 * * ? *)"  
+} 
+
 resource "aws_cloudwatch_event_target" "sync_quicksight_users" {
   rule      = aws_cloudwatch_event_rule.cognito_group_change.name
   target_id = "SyncQuickSightUsers"
   arn       = aws_lambda_function.lambda["sync_quicksight_users"].arn
+}
+
+resource "aws_cloudwatch_event_target" "export_dynamodb_to_s3" {
+  rule      = aws_cloudwatch_event_rule.export_dynamodb_schedule.name
+  target_id = "ExportDynamoDBToS3"
+  arn       = aws_lambda_function.lambda["export_dynamodb_to_s3"].arn
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_sync_quicksight" {
@@ -62,4 +77,12 @@ resource "aws_lambda_permission" "allow_cloudwatch_sync_quicksight" {
   function_name = aws_lambda_function.lambda["sync_quicksight_users"].function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.cognito_group_change.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_export_dynamodb" {
+  statement_id  = "AllowExecutionFromCloudWatchExport"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda["export_dynamodb_to_s3"].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.export_dynamodb_schedule.arn
 }

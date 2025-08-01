@@ -43,3 +43,7 @@ resource "aws_dynamodb_table" "bookings" {
 data "aws_dynamodb_table" "logins" {
   name = "Logins"
 }
+
+data "aws_dynamodb_table" "users" {
+  name = "Users"
+}

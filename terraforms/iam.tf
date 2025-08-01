@@ -83,6 +83,16 @@ resource "aws_iam_role_policy" "lambda_policy" {
           aws_s3_bucket.analytics_bucket.arn,
           "${aws_s3_bucket.analytics_bucket.arn}/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:ListStreams"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -120,6 +130,41 @@ resource "aws_iam_role_policy" "lambda_quicksight_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:ExportTableToPointInTime",
+          "dynamodb:DescribeExport"
+        ]
+        Resource = [
+          "${data.aws_dynamodb_table.logins.arn}",
+          "${data.aws_dynamodb_table.users.arn}",
+          "${data.aws_dynamodb_table.logins.arn}/export/*",
+          "${data.aws_dynamodb_table.users.arn}/export/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.analytics_bucket.arn,
+          "${aws_s3_bucket.analytics_bucket.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:UpdateTable"
+        ]
+        Resource = [
+          data.aws_dynamodb_table.logins.arn,
+          data.aws_dynamodb_table.users.arn
+        ]
       }
     ]
   })

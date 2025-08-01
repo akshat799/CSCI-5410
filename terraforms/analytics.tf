@@ -3,7 +3,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 resource "aws_s3_bucket" "analytics_bucket" {
-  bucket = "dalscooter-dynamodb-exports-${data.aws_caller_identity.current.account_id}-${random_id.bucket_suffix.hex}"
+  bucket = "dalscooter-dynamodb-exports-${var.aws_account_id}-${random_id.bucket_suffix.hex}"
 }
 
 resource "aws_glue_catalog_database" "analytics_db" {
@@ -50,15 +50,19 @@ resource "aws_iam_role_policy" "glue_crawler_policy" {
       {
         Effect = "Allow",
         Action = [
-          "glue:*",
-          "dynamodb:DescribeStream",
-          "dynamodb:GetRecords",
-          "dynamodb:GetShardIterator",
-          "dynamodb:ListStreams"
+          "glue:*"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ],
         Resource = [
-          "${data.aws_dynamodb_table.logins.arn}",
-          "${data.aws_dynamodb_table.logins.arn}/stream/*"
+          "arn:aws:logs:us-east-1:370161336954:log-group:/aws-glue/crawlers:*"
         ]
       }
     ]
@@ -70,12 +74,20 @@ resource "aws_glue_crawler" "users_crawler" {
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.analytics_db.name
   table_prefix  = "users_"
-
   s3_target {
-    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/users/"
+    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/users/AWSDynamoDB/"
+    exclusions = [
+      "**/manifest-files*",
+      "**/manifest-summary*"
+    ]
   }
-
-  schedule = "cron(10 * * * ? *)"
+  configuration = jsonencode({
+    Version = 1.0,
+    Grouping = {
+      TableGroupingPolicy = "CombineCompatibleSchemas"
+    }
+  })
+  schedule = "cron(10 0,6,12,18 * * ? *)"
 }
 
 resource "aws_glue_crawler" "logins_crawler" {
@@ -83,12 +95,20 @@ resource "aws_glue_crawler" "logins_crawler" {
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.analytics_db.name
   table_prefix  = "logins_"
-
   s3_target {
-    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/logins/"
+    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/logins/AWSDynamoDB/"
+    exclusions = [
+      "**/manifest-files*",
+      "**/manifest-summary*"
+    ]
   }
-
-  schedule = "cron(10 * * * ? *)"
+  configuration = jsonencode({
+    Version = 1.0,
+    Grouping = {
+      TableGroupingPolicy = "CombineCompatibleSchemas"
+    }
+  })
+  schedule = "cron(10 0,6,12,18 * * ? *)"
 }
 
 output "analytics_s3_bucket_name" {

@@ -307,7 +307,136 @@ resource "aws_api_gateway_integration" "get_embed_url_lambda" {
   uri                     = aws_lambda_function.lambda["get_embed_url"].invoke_arn
 }
 
-# Lambda Permissions for API Gateway
+resource "aws_api_gateway_method_response" "get_embed_url_200" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_embed_url_200" {
+  depends_on = [aws_api_gateway_integration.get_embed_url_lambda]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = aws_api_gateway_method_response.get_embed_url_200.status_code
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "get_embed_url_400" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = "400"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_embed_url_400" {
+  depends_on = [aws_api_gateway_integration.get_embed_url_lambda]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = aws_api_gateway_method_response.get_embed_url_400.status_code
+  selection_pattern = ".*(Missing|Invalid).*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "get_embed_url_401" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = "401"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_embed_url_401" {
+  depends_on = [aws_api_gateway_integration.get_embed_url_lambda]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = aws_api_gateway_method_response.get_embed_url_401.status_code
+  selection_pattern = ".*Unauthorized.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "get_embed_url_403" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = "403"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_embed_url_403" {
+  depends_on = [aws_api_gateway_integration.get_embed_url_lambda]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = aws_api_gateway_method_response.get_embed_url_403.status_code
+  selection_pattern = ".*Forbidden.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+  }
+}
+
+resource "aws_api_gateway_method_response" "get_embed_url_500" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = "500"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_embed_url_500" {
+  depends_on = [aws_api_gateway_integration.get_embed_url_lambda]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.embed_url.id
+  http_method = aws_api_gateway_method.get_embed_url.http_method
+  status_code = aws_api_gateway_method_response.get_embed_url_500.status_code
+  selection_pattern = ".*Error.*"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+  }
+}
+
+# Lambda Permissions for API Gateway (UNCHANGED for booking/availability)
 resource "aws_lambda_permission" "add_availability_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -378,7 +507,12 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.get_embed_url_lambda,
     aws_api_gateway_integration_response.availability_options,
     aws_api_gateway_integration_response.bookings_options,
-    aws_api_gateway_integration_response.embed_url_options
+    aws_api_gateway_integration_response.embed_url_options,
+    aws_api_gateway_integration_response.get_embed_url_200,
+    aws_api_gateway_integration_response.get_embed_url_400,
+    aws_api_gateway_integration_response.get_embed_url_401,
+    aws_api_gateway_integration_response.get_embed_url_403,
+    aws_api_gateway_integration_response.get_embed_url_500
   ]
 
   triggers = {
@@ -406,6 +540,11 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       aws_api_gateway_integration.availability_options.id,
       aws_api_gateway_integration.bookings_options.id,
       aws_api_gateway_integration.embed_url_options.id,
+      aws_api_gateway_method_response.get_embed_url_200.id,
+      aws_api_gateway_method_response.get_embed_url_400.id,
+      aws_api_gateway_method_response.get_embed_url_401.id,
+      aws_api_gateway_method_response.get_embed_url_403.id,
+      aws_api_gateway_method_response.get_embed_url_500.id,
       aws_api_gateway_authorizer.cognito_authorizer.id
     ]))
   }

@@ -21,23 +21,26 @@ Modal.setAppElement('#root');
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/mfa-question" element={<MFAQuestionPage />} />
-      <Route path="/mfa-caesar" element={<MFACaesarPage />} />
-      <Route path="/customer-home" element={<CustomerHomePage />} />
-      <Route path="/franchise-dashboard" element={<FranchiseDashboard />} />
-      <Route path="/book-bike" element={<BookBikePage />} />
-      <Route path="/otp" element={<OTPPage />} />
-      <Route path="/feedback" element={<FeedbackPage />} />
-      {/* <Route path="/available-slot" element={<AvailableSlotsPage />} /> */}
-      <Route path="/bookings" element={<BookingsPage />} />
-      <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="*" element={<div className="p-6 text-center">404 — Page Not Found</div>} />
-    </Routes>
+      <>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/mfa-question" element={<MFAQuestionPage />} />
+          <Route path="/mfa-caesar" element={<MFACaesarPage />} />
+          <Route path="/customer-home" element={<CustomerHomePage />} />
+          <Route path="/franchise-dashboard" element={<FranchiseDashboard />} />
+          <Route path="/book-bike" element={<BookBikePage />} />
+          <Route path="/otp" element={<OTPPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          {/* <Route path="/available-slot" element={<AvailableSlotsPage />} /> */}
+          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="*" element={<div className="p-6 text-center">404 — Page Not Found</div>} />
+        </Routes>
+        <ChatBot />  {/* Always visible */}
+      </>
   );
 }
 

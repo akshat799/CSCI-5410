@@ -11,10 +11,10 @@ def lambda_handler(event, context):
         bucket = os.environ['ANALYTICS_BUCKET']
         tables = ['Users', 'Logins']
         export_arns = []
+        export_time = int(time.time())
 
         for table in tables:
-            export_time = int(time.time())
-            export_path = f"{table.lower()}/AWSDynamoDB/{export_time}/data/"
+            export_path = f"{table.lower()}/AWSDynamoDB/data/"
             response = dynamodb.export_table_to_point_in_time(
                 TableArn=f"arn:aws:dynamodb:us-east-1:{os.environ['AWS_ACCOUNT_ID']}:table/{table}",
                 S3Bucket=bucket,
@@ -23,7 +23,7 @@ def lambda_handler(event, context):
             )
             export_arns.append(response['ExportDescription']['ExportArn'])
 
-        for export_arns in export_arns:
+        for export_arn in export_arns:
             while True:
                 export_status = dynamodb.describe_export(ExportArn=export_arn)
                 status = export_status['ExportDescription']['ExportStatus']

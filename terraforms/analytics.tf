@@ -62,7 +62,7 @@ resource "aws_iam_role_policy" "glue_crawler_policy" {
           "logs:PutLogEvents"
         ],
         Resource = [
-          "arn:aws:logs:us-east-1:370161336954:log-group:/aws-glue/crawlers:*"
+          "arn:aws:logs:us-east-1:370161336954:log-group:/aws-glue/*"
         ]
       }
     ]
@@ -73,18 +73,24 @@ resource "aws_glue_crawler" "users_crawler" {
   name          = "users-crawler"
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.analytics_db.name
-  table_prefix  = "users_"
+  table_prefix  = "users_data_"
   s3_target {
-    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/users/AWSDynamoDB/"
+    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/users/AWSDynamoDB/data/"
     exclusions = [
       "**/manifest-files*",
-      "**/manifest-summary*"
+      "**/manifest-summary*",
+      "**/*.md5"
     ]
   }
   configuration = jsonencode({
     Version = 1.0,
     Grouping = {
       TableGroupingPolicy = "CombineCompatibleSchemas"
+    },
+    CrawlerOutput = {
+      Tables = {
+        AddOrUpdateBehavior = "MergeNewColumns"
+      }
     }
   })
   schedule = "cron(10 0,6,12,18 * * ? *)"
@@ -94,21 +100,68 @@ resource "aws_glue_crawler" "logins_crawler" {
   name          = "logins-crawler"
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.analytics_db.name
-  table_prefix  = "logins_"
+  table_prefix  = "logins_data_"
   s3_target {
-    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/logins/AWSDynamoDB/"
+    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/logins/AWSDynamoDB/data/"
     exclusions = [
       "**/manifest-files*",
-      "**/manifest-summary*"
+      "**/manifest-summary*",
+      "**/*.md5"
     ]
   }
   configuration = jsonencode({
     Version = 1.0,
     Grouping = {
       TableGroupingPolicy = "CombineCompatibleSchemas"
+    },
+    CrawlerOutput = {
+      Tables = {
+        AddOrUpdateBehavior = "MergeNewColumns"
+      }
     }
   })
   schedule = "cron(10 0,6,12,18 * * ? *)"
+}
+
+resource "aws_glue_job" "merge_logins_data" {
+  name     = "merge-logins-data"
+  role_arn = aws_iam_role.glue_crawler_role.arn
+
+  command {
+    script_location = "s3://${aws_s3_bucket.analytics_bucket.bucket}/scripts/merge_logins_data.py"
+    name            = "glueetl"
+    python_version  = "3"
+  }
+
+  default_arguments = {
+    "--JOB_NAME"   = "merge-logins-data"
+    "--S3_BUCKET"  = aws_s3_bucket.analytics_bucket.bucket
+  }
+
+  max_retries = 0
+  timeout     = 60
+}
+
+resource "aws_glue_crawler" "logins_processed_crawler" {
+  name          = "logins-processed-crawler"
+  role          = aws_iam_role.glue_crawler_role.arn
+  database_name = aws_glue_catalog_database.analytics_db.name
+  table_prefix  = "logins_data_"
+  s3_target {
+    path = "s3://${aws_s3_bucket.analytics_bucket.bucket}/logins/processed/"
+  }
+  configuration = jsonencode({
+    Version = 1.0,
+    Grouping = {
+      TableGroupingPolicy = "CombineCompatibleSchemas"
+    },
+    CrawlerOutput = {
+      Tables = {
+        AddOrUpdateBehavior = "MergeNewColumns"
+      }
+    }
+  })
+  schedule = "cron(15 0,6,12,18 * * ? *)"
 }
 
 output "analytics_s3_bucket_name" {

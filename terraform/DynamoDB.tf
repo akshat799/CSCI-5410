@@ -95,3 +95,32 @@ resource "aws_dynamodb_table" "bikes" {
     projection_type = "ALL"
   }
 }
+
+resource "aws_dynamodb_table" "chatlogs" {
+  name         = "ChatLogs"
+  billing_mode = "PAY_PER_REQUEST"
+
+  hash_key = "chatId"
+  range_key = "timestamp"
+
+  attribute {
+    name = "chatId"
+    type = "S"
+  }
+  attribute {
+    name = "concernId"
+    type = "S"
+  }
+  attribute {
+    name = "timestamp"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name               = "ConcernIndex"
+    hash_key           = "concernId"
+    range_key          = "timestamp"
+    projection_type    = "ALL"
+  }
+}
+

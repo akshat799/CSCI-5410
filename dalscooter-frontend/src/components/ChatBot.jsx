@@ -8,7 +8,9 @@ const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [sessionId] = useState(uuidv4());
   const [isMinimized, setIsMinimized] = useState(false);
-
+  const userData = localStorage.user ? JSON.parse(localStorage.user) : null;
+  const role = userData?.role || "Guest";
+  const email = userData?.email || 'Guest';
   const handleSend = async () => {
     const trimmedInput = inputText.trim();
 
@@ -25,9 +27,16 @@ const ChatBot = () => {
       localeId: "en_US",
       sessionId: sessionId,
       text: safeInput,
+      sessionState: {
+        sessionAttributes: {
+          role: role,
+          email: email,
+        }
+      }
     });
 
     try {
+      console.log("Lex Command:", command);
       const response = await lexClient.send(command);
       const botMessage = {
         sender: "bot",

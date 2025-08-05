@@ -61,10 +61,6 @@ resource "aws_cognito_user_pool" "main" {
     require_numbers = true
     require_symbols = false
   }
-
-  lifecycle {
-    ignore_changes = [schema]
-  }
 }
 
 resource "aws_lambda_permission" "allow_cognito_post_confirmation" {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/NavBar';
 import { useAuth } from '../context/AuthContext';
 import '../styles/LoginPage.css';
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
   const validateUserRole = async (email) => {
     try {
       const userData = user || JSON.parse(localStorage.getItem('user') || '{}');
-      console.log('Validating user role, user data:', userData);
+      console.log(`Validating user role for email: ${email}, user data:`, userData);
       if (userData.idToken) {
         const parts = userData.idToken.split('.');
         if (parts.length === 3) {

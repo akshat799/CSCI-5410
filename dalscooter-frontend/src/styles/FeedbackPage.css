@@ -102,7 +102,11 @@
 .modal-content {
   background-color: var(--white);
   border-radius: 0.5rem;
+<<<<<<< HEAD
   /* max-width: 28rem; */
+=======
+  max-width: 28rem;
+>>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;

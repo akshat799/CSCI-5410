@@ -1,8 +1,6 @@
-// src/services/feedbackService.js
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 class FeedbackService {
-  // Submit feedback (requires authentication)
   async submitFeedback(feedbackData, authToken) {
     try {
       const response = await fetch(`${API_BASE_URL}/feedback`, {
@@ -27,7 +25,6 @@ class FeedbackService {
     }
   }
 
-  // Get all feedback (public access)
   async getAllFeedback(queryParams = {}) {
     try {
       const params = new URLSearchParams(queryParams);

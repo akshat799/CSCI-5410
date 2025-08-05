@@ -45,6 +45,37 @@
   --font-size-6xl: 3.75rem;
 }
 
+<<<<<<< HEAD
+=======
+.glass-button {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: var(--dalscooter-blue);
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+  background: var(--dalscooter-blue);
+  color: var(--dalscooter-dark);
+}
+
+.glass-button.border {
+  background: var(--yellow);
+  color: var(--dalscooter-dark);
+  border: none;
+}
+
+.glass-button.border:hover {
+  background: transparent;
+  border: 2px solid var(--dalscooter-blue);
+}
+
+>>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 .franchise-container {
   min-height: 100vh;
   background-color: var(--gray-50);
@@ -837,4 +868,9 @@
 .empty-subtext {
   font-size: var(--font-size-base);
   color: var(--gray-400);
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda

@@ -1,0 +1,12 @@
+{
+    "fileLocations": [
+        {
+            "URIs": [
+                "https://dalscooter-analytics-data-224qcoiu.s3.us-east-1.amazonaws.com/analytics/combined-2025-08-04-21-49-53.json"
+            ]
+        }
+    ],
+    "globalUploadSettings": {
+        "format": "JSON"
+    }
+}

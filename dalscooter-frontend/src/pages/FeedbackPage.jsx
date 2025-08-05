@@ -120,7 +120,7 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
                       <option value="">Choose a bike...</option>
                       {bikes.map((bike) => (
                         <option key={bike.bike_id} value={bike.bike_id}>
-                          {bike.bike_id} - {bike.type} ({bike.status})
+                          {bike.bike_id} - {bike.bike_type} ({bike.status}) {/* Changed from bike.type */}
                         </option>
                       ))}
                     </select>

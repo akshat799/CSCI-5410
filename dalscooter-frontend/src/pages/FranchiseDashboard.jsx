@@ -26,7 +26,7 @@ function FranchiseDashboard() {
   const [selectedBikeId, setSelectedBikeId] = useState('')
 
   const [bikeForm, setBikeForm] = useState({
-    type: "eBike",
+    bike_type: "eBike",
     access_code: "",
     hourly_rate: "",
     features: {},
@@ -42,11 +42,11 @@ function FranchiseDashboard() {
     loadBikes()
   }, [user, navigate])
 
-  const loadBikes = async (type = "") => {
+  const loadBikes = async (bikeType = "") => {
     setLoading(true)
     setError("")
     try {
-      const filters = type ? { type } : {}
+      const filters = bikeType ? { bike_type: bikeType } : {}
       const data = await apiService.getBikes(filters)
       console.log("Fetched bikes from API:", data);
       setBikes(data.bikes || [])
@@ -66,7 +66,7 @@ function FranchiseDashboard() {
       const bikeData = {
         ...bikeForm,
         hourly_rate: Number.parseFloat(bikeForm.hourly_rate),
-        features: getFeaturesByType(bikeForm.type),
+        features: getFeaturesByType(bikeForm.bike_type),
       }
 
       await apiService.createBike(bikeData)
@@ -93,7 +93,7 @@ function FranchiseDashboard() {
       const updateData = {
         ...bikeForm,
         hourly_rate: Number.parseFloat(bikeForm.hourly_rate),
-        features: getFeaturesByType(bikeForm.type),
+        features: getFeaturesByType(bikeForm.bike_type),
       }
 
       await apiService.updateBike(editingBike.bike_id, updateData)
@@ -127,7 +127,7 @@ function FranchiseDashboard() {
   const startEditing = (bike) => {
     setEditingBike(bike)
     setBikeForm({
-      type: bike.type,
+      bike_type: bike.bike_type,
       access_code: bike.access_code,
       hourly_rate: bike.hourly_rate.toString(),
       features: bike.features || {},
@@ -139,7 +139,7 @@ function FranchiseDashboard() {
 
   const resetForm = () => {
     setBikeForm({
-      type: "eBike",
+      bike_type: "eBike",
       access_code: "",
       hourly_rate: "",
       features: {},
@@ -149,13 +149,13 @@ function FranchiseDashboard() {
     setEditingBike(null)
   }
 
-  const getFeaturesByType = (type) => {
+  const getFeaturesByType = (bikeType) => {
     const commonFeatures = {
       height_adjustment: bikeForm.features.height_adjustment || false,
       gps_enabled: bikeForm.features.gps_enabled || false,
     }
 
-    switch (type) {
+    switch (bikeType) {
       case "eBike":
         return {
           ...commonFeatures,
@@ -181,9 +181,9 @@ function FranchiseDashboard() {
     }
   }
 
-  const handleFilterChange = (type) => {
-    setFilterType(type)
-    loadBikes(type)
+  const handleFilterChange = (bikeType) => {
+    setFilterType(bikeType)
+    loadBikes(bikeType)
   }
 
   const generateAccessCode = () => {
@@ -195,11 +195,11 @@ function FranchiseDashboard() {
     (bike) =>
       bike.access_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bike.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bike.type.toLowerCase().includes(searchTerm.toLowerCase()),
+      bike.bike_type.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const getTypeIcon = (type) => {
-    switch (type) {
+  const getTypeIcon = (bikeType) => {
+    switch (bikeType) {
       case "eBike":
         return "🚴"
       case "Gyroscooter":
@@ -341,19 +341,19 @@ function FranchiseDashboard() {
                   onClick={() => handleFilterChange("eBike")}
                   className={`filter-button ${filterType === "eBike" ? "active" : "inactive"}`}
                 >
-                  🚴 eBikes ({bikes.filter((b) => b.type === "eBike").length})
+                  🚴 eBikes ({bikes.filter((b) => b.bike_type === "eBike").length})
                 </button>
                 <button
                   onClick={() => handleFilterChange("Gyroscooter")}
                   className={`filter-button ${filterType === "Gyroscooter" ? "active" : "inactive"}`}
                 >
-                  🛴 Gyroscooters ({bikes.filter((b) => b.type === "Gyroscooter").length})
+                  🛴 Gyroscooters ({bikes.filter((b) => b.bike_type === "Gyroscooter").length})
                 </button>
                 <button
                   onClick={() => handleFilterChange("Segway")}
                   className={`filter-button ${filterType === "Segway" ? "active" : "inactive"}`}
                 >
-                  🛴 Segways ({bikes.filter((b) => b.type === "Segway").length})
+                  🛴 Segways ({bikes.filter((b) => b.bike_type === "Segway").length})
                 </button>
               </div>
 
@@ -403,8 +403,8 @@ function FranchiseDashboard() {
                   <div className="form-group">
                     <label className="form-label">Bike Type</label>
                     <select
-                      value={bikeForm.type}
-                      onChange={(e) => setBikeForm((prev) => ({ ...prev, type: e.target.value }))}
+                      value={bikeForm.bike_type}
+                      onChange={(e) => setBikeForm((prev) => ({ ...prev, bike_type: e.target.value }))}
                       className="form-select"
                       required
                     >
@@ -511,7 +511,7 @@ function FranchiseDashboard() {
                     </div>
 
                     {/* Type-specific Features */}
-                    {bikeForm.type === "eBike" && (
+                    {bikeForm.bike_type === "eBike" && (
                       <div className="form-features-group">
                         <h5 className="form-features-subtitle">eBike Features</h5>
                         <div>
@@ -545,7 +545,7 @@ function FranchiseDashboard() {
                       </div>
                     )}
 
-                    {bikeForm.type === "Gyroscooter" && (
+                    {bikeForm.bike_type === "Gyroscooter" && (
                       <div className="form-features-group">
                         <h5 className="form-features-subtitle">Gyroscooter Features</h5>
                         <div>
@@ -594,7 +594,7 @@ function FranchiseDashboard() {
                       </div>
                     )}
 
-                    {bikeForm.type === "Segway" && (
+                    {bikeForm.bike_type === "Segway" && (
                       <div className="form-features-group">
                         <h5 className="form-features-subtitle">Segway Features</h5>
                         <label className="form-checkbox">
@@ -704,9 +704,9 @@ function FranchiseDashboard() {
                   >
                     <div className="bike-card-header">
                       <div className="flex items-center gap-3">
-                        <span className="bike-card-icon">{getTypeIcon(bike.type)}</span>
+                        <span className="bike-card-icon">{getTypeIcon(bike.bike_type)}</span>
                         <div>
-                          <h4 className="bike-card-title">{bike.type}</h4>
+                          <h4 className="bike-card-title">{bike.bike_type}</h4>
                           <p className="bike-card-code">{bike.access_code}</p>
                         </div>
                       </div>

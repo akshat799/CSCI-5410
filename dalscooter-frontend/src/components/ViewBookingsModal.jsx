@@ -80,7 +80,7 @@ function ViewBookingsModal({ onClose }) {
                 <div className="booking-content">
                   <span>
                     Booking Ref: {booking.booking_reference}<br />
-                    Bike Type: {booking.bike_type}<br />
+                    Bike Type: {booking.bike_type}<br /> 
                     Bike ID: {booking.bike_id}<br />
                     {formatDateTime(booking.startTime)} - {formatDateTime(booking.endTime)} (ADT)
                   </span>

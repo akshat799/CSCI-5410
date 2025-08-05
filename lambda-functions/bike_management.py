@@ -9,10 +9,8 @@ bikes_table = dynamodb.Table('Bikes')
 
 def lambda_handler(event, context):
     try:
-        # Debug: Print the full event to understand what we're receiving
         print(f"Full event: {json.dumps(event)}")
         
-        # Extract user info from Cognito JWT token
         request_context = event.get('requestContext', {})
         authorizer = request_context.get('authorizer', {})
         claims = authorizer.get('claims', {})
@@ -21,21 +19,17 @@ def lambda_handler(event, context):
         print(f"Authorizer: {json.dumps(authorizer)}")
         print(f"Claims: {json.dumps(claims)}")
         
-        # Get groups - could be string or list
         user_groups = claims.get('cognito:groups', '')
         
-        # Convert to list if it's a string
         if isinstance(user_groups, str):
             user_groups = [user_groups] if user_groups else []
         
         print(f"User groups: {user_groups}")
         
-        # TEMPORARY: For debugging, bypass auth check if no authorizer data
         if not claims:
             print("No claims found - API Gateway authorizer not configured properly")
             print("Proceeding without auth check for debugging...")
         else:
-            # Check if user is a franchise operator
             if 'FranchiseOperator' not in user_groups:
                 return {
                     'statusCode': 403,
@@ -89,16 +83,16 @@ def lambda_handler(event, context):
         }
 
 def create_bike(bike_data):
-    bike_id = str(uuid.uuid4())
+    bike_id = str(uuid.uuid4().hex[:6].upper())
     
     bike_item = {
         'bike_id': bike_id,
-        'type': bike_data.get('type', 'eBike'),  # eBike, Gyroscooter, Segway
+        'bike_type': bike_data.get('bike_type', 'eBike'),  
         'access_code': bike_data.get('access_code', generate_access_code()),
-        'hourly_rate': Decimal(str(bike_data.get('hourly_rate', 10.0))),  # Convert to Decimal
-        'features': bike_data.get('features', {}),  # height_adjustment, battery_life, etc.
+        'hourly_rate': Decimal(str(bike_data.get('hourly_rate', 10.0))),
+        'features': bike_data.get('features', {}),
         'discount_code': bike_data.get('discount_code', ''),
-        'status': 'available',  # available, booked, maintenance
+        'status': 'available',
         'location': bike_data.get('location', ''),
         'created_at': datetime.utcnow().isoformat(),
         'updated_at': datetime.utcnow().isoformat()
@@ -126,24 +120,37 @@ def update_bike(bike_id, update_data):
     # Build update expression dynamically
     update_expression = "SET updated_at = :updated_at"
     expression_values = {':updated_at': datetime.utcnow().isoformat()}
+    expression_names = {} 
     
-    allowed_fields = ['type', 'access_code', 'hourly_rate', 'features', 'discount_code', 'status', 'location']
+    allowed_fields = ['bike_type', 'access_code', 'hourly_rate', 'features', 'discount_code', 'status', 'location']
     
     for field in allowed_fields:
         if field in update_data:
-            if field == 'hourly_rate':
-                # Convert hourly_rate to Decimal
+            if field == 'status':  
+                update_expression += ", #st = :status"
+                expression_names['#st'] = 'status'
+                expression_values[':status'] = update_data[field]
+            elif field == 'location':  
+                update_expression += ", #lo = :location"
+                expression_names['#lo'] = 'location'
+                expression_values[':location'] = update_data[field]
+            elif field == 'hourly_rate':
                 update_expression += f", {field} = :{field}"
                 expression_values[f":{field}"] = Decimal(str(update_data[field]))
             else:
                 update_expression += f", {field} = :{field}"
                 expression_values[f":{field}"] = update_data[field]
+
+    update_params = {
+        'Key': {'bike_id': bike_id},
+        'UpdateExpression': update_expression,
+        'ExpressionAttributeValues': expression_values
+    }
     
-    bikes_table.update_item(
-        Key={'bike_id': bike_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=expression_values
-    )
+    if expression_names:
+        update_params['ExpressionAttributeNames'] = expression_names
+    
+    bikes_table.update_item(**update_params)
     
     return {
         'statusCode': 200,
@@ -155,15 +162,15 @@ def update_bike(bike_id, update_data):
     }
 
 def get_bikes(query_params):
-    bike_type = query_params.get('type')
+    bike_type = query_params.get('bike_type')
     status = query_params.get('status')
     
     if bike_type:
         response = bikes_table.query(
             IndexName='TypeIndex',
-            KeyConditionExpression='#type = :type',
-            ExpressionAttributeNames={'#type': 'type'},
-            ExpressionAttributeValues={':type': bike_type}
+            KeyConditionExpression='#bike_type = :bike_type',  
+            ExpressionAttributeNames={'#bike_type': 'bike_type'}, 
+            ExpressionAttributeValues={':bike_type': bike_type}  
         )
     elif status:
         response = bikes_table.query(

@@ -29,7 +29,7 @@ function HomePage() {
     try {
       const filters = {
         status: 'available',
-        ...(filterType && { type: filterType }),
+        ...(filterType && { bike_type: filterType }), // Changed from 'type' to 'bike_type'
       };
       const data = await apiService.getPublicBikes(filters);
       setBikes(data.bikes || []);
@@ -40,8 +40,8 @@ function HomePage() {
     setLoading(false);
   };
 
-  const getTypeIcon = (type) => {
-    switch (type) {
+  const getTypeIcon = (bikeType) => { // Updated parameter name for clarity
+    switch (bikeType) {
       case 'eBike':
         return '🚴';
       case 'Gyroscooter':
@@ -139,19 +139,19 @@ function HomePage() {
                 onClick={() => setFilterType('eBike')}
                 className={`filter-button ${filterType === 'eBike' ? 'active' : ''}`}
               >
-                🚴 eBikes ({bikes.filter((b) => b.type === 'eBike').length})
+                🚴 eBikes ({bikes.filter((b) => b.bike_type === 'eBike').length}) {/* Changed from b.type */}
               </button>
               <button
                 onClick={() => setFilterType('Gyroscooter')}
                 className={`filter-button ${filterType === 'Gyroscooter' ? 'active' : ''}`}
               >
-                🛴 Gyroscooters ({bikes.filter((b) => b.type === 'Gyroscooter').length})
+                🛴 Gyroscooters ({bikes.filter((b) => b.bike_type === 'Gyroscooter').length}) {/* Changed from b.type */}
               </button>
               <button
                 onClick={() => setFilterType('Segway')}
                 className={`filter-button ${filterType === 'Segway' ? 'active' : ''}`}
               >
-                🛴 Segways ({bikes.filter((b) => b.type === 'Segway').length})
+                🛴 Segways ({bikes.filter((b) => b.bike_type === 'Segway').length}) {/* Changed from b.type */}
               </button>
             </div>
             <div className="search-container">
@@ -170,7 +170,7 @@ function HomePage() {
             <div className="error-card">
               <p className="error-text">{error}</p>
             </div>
-          )}
+            )}
 
           {/* Loading State */}
           {loading ? (
@@ -194,9 +194,9 @@ function HomePage() {
                   <div className="bike-card-content">
                     <div className="bike-header">
                       <div className="bike-info">
-                        <span className="bike-icon">{getTypeIcon(bike.type)}</span>
+                        <span className="bike-icon">{getTypeIcon(bike.bike_type)}</span> {/* Changed from bike.type */}
                         <div>
-                          <h3 className="bike-title">{bike.type}</h3>
+                          <h3 className="bike-title">{bike.bike_type}</h3> {/* Changed from bike.type */}
                           <p className="bike-code">{bike.access_code}</p>
                         </div>
                       </div>

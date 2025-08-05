@@ -16,6 +16,15 @@ def get_attr_val(attr):
             return bool(attr['BOOL'])
     return attr
 
+def process_login_item(item):
+    return {
+        "login_id": get_attr_val(item.get("login_id", "unknown")),
+        "user_id": get_attr_val(item.get("user_id", "unknown")),
+        "email": get_attr_val(item.get("email", "unknown")),
+        "status": get_attr_val(item.get("status", "unknown")),
+        "timestamp": get_attr_val(item.get("timestamp", datetime.utcnow().isoformat()))
+    }
+
 
 def lambda_handler(event, context):
     try:
@@ -28,10 +37,13 @@ def lambda_handler(event, context):
         users_table = os.environ.get('USERS_TABLE_NAME', 'Users')
         feedback_table = os.environ.get('FEEDBACK_TABLE_NAME', 'CustomerFeedback')
         bikes_table = os.environ.get('BIKES_TABLE_NAME', 'Bikes')
+        logins_table = os.environ.get('LOGINS_TABLE_NAME', 'Logins')
         
         users = scan_table_paginated(dynamodb, users_table, process_user_item)
         feedback = scan_table_paginated(dynamodb, feedback_table, process_feedback_item)
         bikes = scan_table_paginated(dynamodb, bikes_table, process_bike_item)
+        logins = scan_table_paginated(dynamodb, logins_table, process_login_item)
+
         
         # CREATE COMBINED DATASET FOR QUICKSIGHT
         combined_data = []
@@ -86,7 +98,25 @@ def lambda_handler(event, context):
                 "hourly_rate": b.get('hourly_rate'),
                 "location": b.get('location')
             })
-        
+
+        # Add Logins
+        for l in logins:
+            combined_data.append({
+                "record_type": "login",
+                "user_id": l.get('user_id'),
+                "email": l.get('email'),
+                "role": None,
+                "created_at": l.get('timestamp'),
+                "bike_id": None,
+                "rating": None,
+                "sentiment": None,
+                "scooter_type": None,
+                "status": l.get('status'),
+                "hourly_rate": None,
+                "location": None
+            })
+            
+
         summary = {
             "timestamp": datetime.utcnow().isoformat(),
             "total_users": len(users),
@@ -97,14 +127,18 @@ def lambda_handler(event, context):
             "bikes_by_status": count_by_field(bikes, 'status'),
             "feedback_by_sentiment": count_by_field(feedback, 'sentiment'),
             "average_rating": calculate_average_rating(feedback),
-            "rating_distribution": get_rating_distribution(feedback)
+            "rating_distribution": get_rating_distribution(feedback),
+            "total_logins": len(logins),
+            "login_status_distribution": count_by_field(logins, 'status')
         }
         
         # Upload files with fixed names to overwrite existing ones
         upload_to_s3(s3, bucket, 'analytics/users.json', users)
         upload_to_s3(s3, bucket, 'analytics/feedback.json', feedback)
         upload_to_s3(s3, bucket, 'analytics/bikes.json', bikes)
+        upload_to_s3(s3, bucket, 'analytics/logins.json', logins)
         upload_to_s3(s3, bucket, 'analytics/summary.json', summary)
+        
         
         # Upload combined dataset for QuickSight
         combined_key = 'analytics/combined.json'
@@ -125,7 +159,7 @@ def lambda_handler(event, context):
             Body=json.dumps(manifest),
             ContentType="application/json"
         )
-        print(f"✅ Uploaded manifest file to {manifest_key}")
+        print(f"Uploaded manifest file to {manifest_key}")
         
         print("Aggregation completed successfully")
         

@@ -9,6 +9,7 @@ import FranchiseDashboard from './pages/FranchiseDashboard';
 import BookBikePage from './pages/BookBikePage';
 import OTPPage from './pages/OTPPage';
 import FeedbackPage from './pages/FeedbackPage';
+import CustomerFeedbackPage from './pages/Customer-FeedbackPage';
 import "./index.css"
 // import AvailableSlotsPage from './pages/AvailableSlotsPage';
 import BookingsPage from './pages/BookingsPage';
@@ -33,6 +34,7 @@ function App() {
           <Route path="/book-bike" element={<BookBikePage />} />
           <Route path="/otp" element={<OTPPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/Cfeedback" element={<CustomerFeedbackPage />} />
           {/* <Route path="/available-slot" element={<AvailableSlotsPage />} /> */}
           <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />

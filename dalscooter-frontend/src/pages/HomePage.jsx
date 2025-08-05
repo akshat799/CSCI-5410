@@ -111,10 +111,10 @@ function HomePage() {
               ) : (
                 <>
                   <button
-                    onClick={() => navigate('/feedback')}
+                    onClick={() => navigate('/Cfeedback')}
                     className="glass-button"
                   >
-                    Go to Issues Page
+                    Submit Feedback?
                   </button>
                   <button
                     onClick={() => setShowBookingsModal(true)}

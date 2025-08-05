@@ -119,10 +119,7 @@
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-<<<<<<< HEAD
   margin-bottom: 0.5rem;
-=======
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .edit-input {
@@ -130,11 +127,7 @@
   border: 1px solid var(--gray-300);
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
-<<<<<<< HEAD
   /* width: 5rem; */
-=======
-  width: 5rem;
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .save-btn {
@@ -153,11 +146,7 @@
 
 .cancel-btn {
   padding: 0.25rem 0.75rem;
-<<<<<<< HEAD
   background: var(--red-600);
-=======
-  background: var(--gray-500);
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
   color: var(--white);
   border-radius: var(--border-radius);
   border: none;
@@ -166,11 +155,7 @@
 }
 
 .cancel-btn:hover {
-<<<<<<< HEAD
   background: var(--red-700);
-=======
-  background: var(--gray-600);
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .loading {

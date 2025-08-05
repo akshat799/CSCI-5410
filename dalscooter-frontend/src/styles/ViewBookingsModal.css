@@ -56,27 +56,16 @@
 }
 
 .booking-item {
-<<<<<<< HEAD
   padding: 0.5rem;
   border-bottom: 1px solid var(--gray-200);
   font-size: var(--font-size-sm);
   margin-bottom: 0.25rem;
-=======
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--gray-200);
-  font-size: var(--font-size-sm);
-  border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .booking-item:last-child {
   border-bottom: none;
 }
 
-<<<<<<< HEAD
-.booking-item.cancelled {
-=======
 /* Status-based background and text */
 .booking-item.status-pending {
   background-color: var(--amber-100);
@@ -89,16 +78,10 @@
 }
 
 .booking-item.status-cancelled {
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
   background-color: var(--red-100);
   color: var(--red-700);
 }
 
-<<<<<<< HEAD
-.booking-item.booked {
-  background-color: var(--green-100);
-  color: var(--green-700);
-=======
 .booking-item.status-rejected {
   background-color: var(--rose-100);
   color: var(--rose-700);
@@ -113,18 +96,14 @@
 .status-label {
   font-weight: 600;
   text-transform: capitalize;
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .booking-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-<<<<<<< HEAD
-=======
   gap: 1rem;
   flex-wrap: wrap;
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda
 }
 
 .cancel-btn {
@@ -169,8 +148,4 @@
 
 .modal-footer .close-btn:hover {
   background: var(--gray-300);
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 29436f6af6e5b966ec224963da3c54ba5dccebda

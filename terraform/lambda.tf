@@ -8,6 +8,11 @@ locals {
     bike_management       = "${path.module}/../lambda-functions/bike_management.py"  
     get_bikes_public      = "${path.module}/../lambda-functions/get_bikes_public.py"
     feedback_management   = "${path.module}/../lambda-functions/feedback_management.py"
+    booking_request       = "${path.module}/../lambda-functions/eBikeBookingRequest.py"
+    booking_approval      = "${path.module}/../lambda-functions/eBikeBookingApproval.py"
+    concern_processor     = "${path.module}/../lambda-functions/concern_processor.py"
+    chat_post             = "${path.module}/../lambda-functions/chat_post.py"
+    chat_get             = "${path.module}/../lambda-functions/chat_get.py"
   }
 }
 
@@ -28,13 +33,24 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = each.value.output_base64sha256
 
   environment {
-    variables = each.key == "notification_consumer" ? {
-      SES_FROM_ADDRESS = "csci5408@gmail.com"
-      SES_TEMPLATE_NAME = "NotificationTemplate"
-    } : {
-      REGISTRATION_TOPIC_ARN = aws_sns_topic.registration_topic.arn
-      LOGIN_TOPIC_ARN        = aws_sns_topic.login_topic.arn
-    }
+    variables = merge({
+      SES_FROM_ADDRESS           = "csci5408@gmail.com",
+      SES_TEMPLATE_NAME          = "NotificationTemplate",
+      SES_ADMIN_EMAIL            = "csci5408@gmail.com",
+      BOOKING_FAILURE_TOPIC_ARN = try(aws_sns_topic.booking_failure_topic.arn, ""),
+      BOOKING_FAILURE_QUEUE_URL  = try(aws_sqs_queue.booking_failure_queue.url, ""),
+      BOOKING_CONFIRMATION_TOPIC_ARN = try(aws_sns_topic.booking_confirmation_topic.arn, ""),
+      BOOKING_CONFIRMATION_QUEUE_URL = try(aws_sqs_queue.booking_confirmation_queue.url, ""),
+      BOOKING_REQUEST_TOPIC_ARN      = try(aws_sns_topic.booking_request_topic.arn, ""),
+      BOOKING_REQUEST_QUEUE_URL      = try(aws_sqs_queue.booking_request_queue.url, ""),
+      REGISTRATION_TOPIC_ARN     = try(aws_sns_topic.registration_topic.arn, ""),
+      LOGIN_TOPIC_ARN            = try(aws_sns_topic.login_topic.arn, "")
+    },
+    each.key == "concern_processor" ? {
+        USERS_TABLE    = aws_dynamodb_table.users.name
+        CHATLOGS_TABLE = aws_dynamodb_table.chatlogs.name
+    } : {}
+    )
   }
 }
 
@@ -54,11 +70,17 @@ resource "aws_iam_role_policy" "lambda_sqs_permissions" {
           "sqs:GetQueueUrl",
           "sqs:ChangeMessageVisibility"
         ],
-        Resource = aws_sqs_queue.notification_queue.arn
+        Resource = [
+          aws_sqs_queue.notification_queue.arn,
+          aws_sqs_queue.booking_failure_queue.arn,
+          aws_sqs_queue.booking_confirmation_queue.arn,
+          aws_sqs_queue.booking_request_queue.arn
+        ]
       }
     ]
   })
 }
+
 
 resource "aws_lambda_event_source_mapping" "consumer_sqs" {
   event_source_arn = aws_sqs_queue.notification_queue.arn
@@ -66,3 +88,11 @@ resource "aws_lambda_event_source_mapping" "consumer_sqs" {
   batch_size       = 1
   enabled          = true
 }
+
+resource "aws_lambda_event_source_mapping" "booking_approval_sqs_trigger" {
+  event_source_arn = aws_sqs_queue.booking_request_queue.arn
+  function_name    = aws_lambda_function.lambda["booking_approval"].arn
+  batch_size       = 1
+  enabled          = true
+}
+

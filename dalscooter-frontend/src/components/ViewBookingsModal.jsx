@@ -53,6 +53,21 @@ function ViewBookingsModal({ onClose }) {
     }
   };
 
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'status-pending';
+      case 'approved':
+        return 'status-approved';
+      case 'cancelled':
+        return 'status-cancelled';
+      case 'rejected':
+        return 'status-rejected';
+      default:
+        return 'status-unknown';
+    }
+  };
+
   return (
     <Modal
       isOpen
@@ -75,19 +90,23 @@ function ViewBookingsModal({ onClose }) {
             {bookings.map((booking) => (
               <li
                 key={booking.booking_reference}
-                className={`booking-item ${booking.status === 'cancelled' ? 'cancelled' : 'booked'}`}
+                className={`booking-item ${getStatusClass(booking.status)}`}
               >
                 <div className="booking-content">
                   <span>
-                    Booking Ref: {booking.booking_reference}<br />
-                    Bike Type: {booking.bike_type}<br />
-                    Bike ID: {booking.bike_id}<br />
-                    {formatDateTime(booking.startTime)} - {formatDateTime(booking.endTime)} (ADT)
+                    <strong>Booking Ref:</strong> {booking.booking_reference}<br />
+                    <strong>Bike Type:</strong> {booking.bike_type}<br />
+                    <strong>Bike ID:</strong> {booking.bike_id}<br />
+                    <strong>Time:</strong> {formatDateTime(booking.startTime)} - {formatDateTime(booking.endTime)} (ADT)<br />
+                    <strong>Status:</strong>{' '}
+                    <span className={`status-label ${getStatusClass(booking.status)}`}>
+                      {booking.status}
+                    </span>
                   </span>
                   <button
                     onClick={() => handleCancel(booking.booking_reference)}
                     className="cancel-btn"
-                    disabled={loading || booking.status === 'cancelled'}
+                    disabled={loading || ['cancelled', 'rejected'].includes(booking.status)}
                   >
                     Cancel
                   </button>

@@ -1,5 +1,5 @@
 data "aws_cognito_user_pool" "main" {
-  user_pool_id = "us-east-1_vICCuFdB4" 
+  user_pool_id = "us-east-1_ndrBUBDz1" 
 }
 
 resource "aws_api_gateway_rest_api" "api" {
@@ -181,7 +181,7 @@ resource "aws_api_gateway_integration" "book_slot_lambda" {
   http_method             = aws_api_gateway_method.book_slot.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.book_slot.invoke_arn
+  uri                     = data.terraform_remote_state.lambda.outputs.booking_request_lambda_arn
 }
 
 # Cancel Booking
@@ -258,10 +258,11 @@ resource "aws_lambda_permission" "get_availability_permission" {
 resource "aws_lambda_permission" "book_slot_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.book_slot.function_name
+  function_name = data.terraform_remote_state.lambda.outputs.booking_request_lambda_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/POST/bookings"
 }
+
 
 resource "aws_lambda_permission" "cancel_booking_permission" {
   statement_id  = "AllowAPIGatewayInvoke"

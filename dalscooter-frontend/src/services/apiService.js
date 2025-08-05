@@ -9,7 +9,7 @@ export const getAuthHeaders = () => {
 
   try {
     if (user?.idToken) {
-      token = user.idToken; // Use idToken directly from AuthContext
+      token = user.idToken;
     }
   } catch (error) {
     console.error("Error extracting ID token:", error);
@@ -26,7 +26,6 @@ export const getAuthHeaders = () => {
 };
 
 export const apiService = {
-  // Get public bikes (no authentication required)
   getPublicBikes: async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const url = `${API_BASE_URL}/public-bikes${queryParams ? `?${queryParams}` : ''}`;
@@ -45,7 +44,6 @@ export const apiService = {
     return response.json();
   },
 
-  // Get all bikes (requires authentication - for franchise owners)
   getBikes: async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     const url = `${API_BASE_URL}/bikes${queryParams ? `?${queryParams}` : ''}`;

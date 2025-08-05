@@ -46,7 +46,7 @@ def lambda_handler(event, context):
         'secAnswer':   attrs.get('custom:secAnswer', '').strip().lower()
     })
 
-    plain_text = attrs.get('custom:plainText', 'default')
+    plain_text = attrs.get('custom:caesarText', 'default')
     try:
         shift = int(attrs.get('custom:shiftKey', 0))
     except (TypeError, ValueError):
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
     challenge_text = apply_caesar_cipher(plain_text, shift)
     caesar_table.put_item(Item={
         'user_id':       user_id,
-        'plainText':     plain_text,
+        'caesarText':     plain_text,
         'shift':         shift,
         'challengeText': challenge_text
     })
@@ -75,12 +75,14 @@ def lambda_handler(event, context):
             'email':   attrs.get('email'),
             'subject': 'Welcome to DALScooter!',
             'message': (
-                f"Hi {attrs.get('name')},\n\n"
-                "Thank you for registering with DALScooter. "
-                "You now have full access to our fleet of e-bikes and exclusive features:\n"
-                " • Book rides instantly from our app\n"
-                " • Track and manage your trips\n\n"
-                "Happy riding!"
+                f"<p>Hi {attrs.get('name')},</p><br/>"
+                f"<p>Thank you for registering with DALScooter. </p>"
+                f"<p>You now have full access to our fleet of e-bikes and exclusive features:</p>"
+                f"<ul>"
+                f" <li>Book rides instantly from our app</li>"
+                f" <li> Track and manage your trips </li>"
+                f"</ul>"
+                f"<p>Happy riding!<br /> - DAL SCOOTER Team</p>"
             )
         }
         try:

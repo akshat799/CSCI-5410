@@ -234,15 +234,28 @@ function FranchiseDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="header-title">Franchise Dashboard</h1>
-                <p className="header-subtitle">Manage your fleet of bikes, scooters, and segways</p>
+                <p className="header-subtitle">
+                  Manage your fleet of bikes, scooters, and segways
+                </p>
               </div>
-              <button
-                onClick={() => loadBikes(filterType)}
-                className="refresh-button"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </button>
+
+              {/* both buttons now live in a little flex‐gap wrapper */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => loadBikes(filterType)}
+                  className="refresh-button"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </button>
+
+                <button
+                  onClick={() => navigate('/issues')}
+                  className="glass-button"
+                >
+                  Go to Issues Page
+                </button>
+              </div>
             </div>
           </div>
 

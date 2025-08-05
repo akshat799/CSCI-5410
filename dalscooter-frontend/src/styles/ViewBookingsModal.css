@@ -56,29 +56,55 @@
 }
 
 .booking-item {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--gray-200);
   font-size: var(--font-size-sm);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
 }
 
 .booking-item:last-child {
   border-bottom: none;
 }
 
-.booking-item.cancelled {
+/* Status-based background and text */
+.booking-item.status-pending {
+  background-color: var(--amber-100);
+  color: var(--amber-800);
+}
+
+.booking-item.status-approved {
+  background-color: var(--green-100);
+  color: var(--green-700);
+}
+
+.booking-item.status-cancelled {
   background-color: var(--red-100);
   color: var(--red-700);
 }
 
-.booking-item.booked {
-  background-color: var(--green-100);
-  color: var(--green-700);
+.booking-item.status-rejected {
+  background-color: var(--rose-100);
+  color: var(--rose-700);
+}
+
+.booking-item.status-unknown {
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+}
+
+/* Optional label styling */
+.status-label {
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .booking-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .cancel-btn {

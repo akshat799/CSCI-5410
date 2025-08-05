@@ -33,14 +33,16 @@ def lambda_handler(event, context):
             'email':   email,
             'subject': 'Welcome Back to DALScooter!',
             'message': (
-                f"Hi {user_id},\n\n"
-                "You’ve successfully logged into your DALScooter account.\n\n"
-                "What’s new:\n"
-                " • Quick-start rides right from the app home screen\n"
-                " • Real-time trip tracking and history\n"
-                " • Enhanced rewards dashboard to earn more with every ride\n\n"
-                "If this wasn’t you, please reset your password immediately.\n\n"
-                "Happy riding!\n"
+                f"<p>Hi {user_id},</p>"
+                f"<p>You’ve successfully logged into your DALScooter account.</p>"
+                f"<p><strong>What’s new:</strong></p>"
+                f"<ul>"
+                f"<li>Quick-start rides right from the app home screen</li>"
+                f"<li>Real-time trip tracking and history</li>"
+                f"<li>Enhanced rewards dashboard to earn more with every ride</li>"
+                f"</ul>"
+                f"<p>If this wasn’t you, please reset your password immediately.</p>"
+                f"<p>Happy riding!<br />– DALScooter Team</p>"
             )
         }
         try:

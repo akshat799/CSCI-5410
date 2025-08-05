@@ -204,5 +204,44 @@ export const apiService = {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || `Get bookings failed: ${response.status}`);
     return data;
+  },
+  getConcerns: async () => {
+    console.log("THIS IS THE HEADER", getAuthHeaders())
+    const response = await fetch(`${API_BASE_URL}/concerns`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Failed to fetch concerns: ${response.status}`);
+    }
+    return data;
+  },
+
+  // 2) Get all chats for a single concern
+  getConcernChats: async (concernId) => {
+    const response = await fetch(`${API_BASE_URL}/concerns/${concernId}/chats`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Failed to fetch chats for ${concernId}: ${response.status}`);
+    }
+    return data;
+  },
+
+  // 3) Post a new chat message to a concern
+  postConcernChat: async (concernId, messageData) => {
+    const response = await fetch(`${API_BASE_URL}/concerns/${concernId}/chats`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(messageData)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Failed to send chat for ${concernId}: ${response.status}`);
+    }
+    return data;
   }
 };

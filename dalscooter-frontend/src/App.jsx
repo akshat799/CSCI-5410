@@ -16,6 +16,7 @@ import FranchiseAvailabilityDashboard from './pages/FranchiseAvailabilityDashboa
 import ProfilePage from "./pages/ProfilePage";
 import Modal from 'react-modal';
 import ChatBot from './components/ChatBot';
+import ChatPage from './pages/ChatPage';
 Modal.setAppElement('#root');
 
 
@@ -37,7 +38,9 @@ function App() {
           <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/franchise-availability" element={<FranchiseAvailabilityDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/issues" element={<ChatPage />} />
           <Route path="*" element={<div className="p-6 text-center">404 — Page Not Found</div>} />
+          
         </Routes>
         <ChatBot />  {/* Always visible */}
       </>

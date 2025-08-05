@@ -8,11 +8,12 @@ locals {
     bike_management       = "${path.module}/../lambda-functions/bike_management.py"  
     get_bikes_public      = "${path.module}/../lambda-functions/get_bikes_public.py"
     feedback_management   = "${path.module}/../lambda-functions/feedback_management.py"
-    booking_request       = "${path.module}/../lambda-functions/eBikeBookingRequest.py"
-    booking_approval      = "${path.module}/../lambda-functions/eBikeBookingApproval.py"
+    booking_request       = "${path.module}/../lambda-functions/booking_request.py"
+    booking_approval      = "${path.module}/../lambda-functions/booking_approval.py"
     concern_processor     = "${path.module}/../lambda-functions/concern_processor.py"
     chat_post             = "${path.module}/../lambda-functions/chat_post.py"
     chat_get             = "${path.module}/../lambda-functions/chat_get.py"
+    get_concerns         = "${path.module}/../lambda-functions/get_concerns.py" 
   }
 }
 
@@ -46,7 +47,7 @@ resource "aws_lambda_function" "lambda" {
       REGISTRATION_TOPIC_ARN     = try(aws_sns_topic.registration_topic.arn, ""),
       LOGIN_TOPIC_ARN            = try(aws_sns_topic.login_topic.arn, "")
     },
-    each.key == "concern_processor" ? {
+    contains(["concern_processor", "chat_post", "chat_get"], each.key) ? {
         USERS_TABLE    = aws_dynamodb_table.users.name
         CHATLOGS_TABLE = aws_dynamodb_table.chatlogs.name
     } : {}

@@ -64,7 +64,7 @@ def lambda_handler(event, context):
 
         # 3. Return success
         return {
-            'statusCode': 202,
+            'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': '*',
@@ -86,12 +86,12 @@ def lambda_handler(event, context):
             'email': user_id,
             'subject': 'Booking Request Failed',
             'message': (
-                f"Hi {user_id},\n\n"
-                "Unfortunately, your booking request could not be processed due to the following error:\n\n"
-                f"{error_message}\n\n"
-                "Please double-check your booking details and try again.\n"
-                "If the problem persists, contact our support team.\n\n"
-                "– DALScooter Team"
+                f"<p>Hi {message.get('user_id', 'User')},</p>"
+                f"<p>Unfortunately, your booking request could not be processed due to the following error:</p>"
+                f"<pre style='background-color:#f8f8f8;padding:10px;border-radius:4px;'>{error_message}</pre>"
+                f"<p>Please double-check your booking details and try again.<br />"
+                f"If the problem persists, contact our support team.</p>"
+                f"<p>– DALScooter Team</p>"
             )
         }
 

@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     elif len(session) == 3 and session[2]['challengeName'] == "CUSTOM_CHALLENGE" and session[1]['challengeResult']:
         item       = caesar_table.get_item(Key={'user_id': user}).get('Item', {})
         cipher     = item.get('challengeText', '')
-        plaintext  = item.get('plainText', '').strip().lower()
+        plaintext  = item.get('caesarText', '').strip().lower()
 
         event['response']['publicChallengeParameters'] = {
             'challenge_type': 'CAESAR',

@@ -375,3 +375,20 @@ resource "aws_sns_topic_subscription" "concern_to_processor" {
   protocol  = "lambda"
   endpoint  = aws_lambda_function.lambda["concern_processor"].arn
 }
+
+resource "aws_iam_role_policy" "lambda_concern_publish" {
+  name = "LambdaConcernSNSPublish"
+  role = aws_iam_role.lambda_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowPublishToConcernTopic",
+        Effect = "Allow",
+        Action = ["sns:Publish"],
+        Resource = aws_sns_topic.concern_topic.arn
+      }
+    ]
+  })
+}

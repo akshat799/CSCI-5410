@@ -1,5 +1,5 @@
 data "aws_cognito_user_pool" "main" {
-  user_pool_id = "us-east-1_ndrBUBDz1" 
+  user_pool_id = "us-east-1_u6ZbuJaWT" 
 }
 
 resource "aws_api_gateway_rest_api" "api" {

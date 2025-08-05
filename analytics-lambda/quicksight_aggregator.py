@@ -100,18 +100,17 @@ def lambda_handler(event, context):
             "rating_distribution": get_rating_distribution(feedback)
         }
         
-        timestamp = datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S')
-        
-        # Upload individual files (keep existing)
-        upload_to_s3(s3, bucket, f'analytics/users-{timestamp}.json', users)
-        upload_to_s3(s3, bucket, f'analytics/feedback-{timestamp}.json', feedback)
-        upload_to_s3(s3, bucket, f'analytics/bikes-{timestamp}.json', bikes)
-        upload_to_s3(s3, bucket, f'analytics/summary-{timestamp}.json', summary)
+        # Upload files with fixed names to overwrite existing ones
+        upload_to_s3(s3, bucket, 'analytics/users.json', users)
+        upload_to_s3(s3, bucket, 'analytics/feedback.json', feedback)
+        upload_to_s3(s3, bucket, 'analytics/bikes.json', bikes)
+        upload_to_s3(s3, bucket, 'analytics/summary.json', summary)
         
         # Upload combined dataset for QuickSight
-        combined_key = f'analytics/combined-{timestamp}.json'
+        combined_key = 'analytics/combined.json'
         upload_to_s3(s3, bucket, combined_key, combined_data)
         
+        # CREATE AND UPLOAD MANIFEST FILE
         manifest = {
             "fileLocations": [
                 {"URIs": [f"s3://{bucket}/{combined_key}"]}
@@ -126,7 +125,7 @@ def lambda_handler(event, context):
             Body=json.dumps(manifest),
             ContentType="application/json"
         )
-        print(f"Uploaded manifest file to {manifest_key}")
+        print(f"✅ Uploaded manifest file to {manifest_key}")
         
         print("Aggregation completed successfully")
         
@@ -134,7 +133,7 @@ def lambda_handler(event, context):
             "statusCode": 200, 
             "body": json.dumps({
                 "message": "Aggregation and manifest uploaded successfully",
-                "timestamp": timestamp,
+                "timestamp": datetime.utcnow().isoformat(),
                 "combined_file": combined_key,
                 "manifest_file": manifest_key
             }, default=decimal_default)

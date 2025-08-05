@@ -10,7 +10,7 @@ const ChatBot = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const userData = localStorage.user ? JSON.parse(localStorage.user) : null;
   const role = userData?.role || "Guest";
-
+  const email = userData?.email || 'Guest';
   const handleSend = async () => {
     const trimmedInput = inputText.trim();
 
@@ -29,12 +29,14 @@ const ChatBot = () => {
       text: safeInput,
       sessionState: {
         sessionAttributes: {
-          role: role
+          role: role,
+          email: email,
         }
       }
     });
 
     try {
+      console.log("Lex Command:", command);
       const response = await lexClient.send(command);
       const botMessage = {
         sender: "bot",

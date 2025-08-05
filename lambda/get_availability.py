@@ -27,7 +27,7 @@ def lambda_handler(event, context):
 
         query_params = event.get('queryStringParameters', {}) or {}
         bike_id = query_params.get('bike_id')
-        bike_type = query_params.get('type')
+        bike_type = query_params.get('bike_type')
 
         # Query availability
         if bike_id:
@@ -46,13 +46,13 @@ def lambda_handler(event, context):
             bike_response = bikes_table.get_item(Key={'bike_id': slot['bike_id']})
             if 'Item' in bike_response:
                 bike = bike_response['Item']
-                if not bike_type or bike['type'] == bike_type:
+                if not bike_type or bike['bike_type'] == bike_type:
                     results.append({
                         'bike_id': slot['bike_id'],
                         'slot_id': slot['slot_id'],
                         'startTime': slot['startTime'],
                         'endTime': slot['endTime'],
-                        'bike_type': bike['type'],
+                        'bike_type': bike['bike_type'],
                         'hourly_rate': float(bike['hourly_rate']),
                         'features': bike.get('features', {})
                     })

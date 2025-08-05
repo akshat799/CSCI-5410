@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
 import BookSlotModal from '../components/BookSlotModal';
 import ViewBookingsModal from '../components/ViewBookingsModal';
+import ViewReviewsModal from '../components/ViewReviewsModal';
 import '../styles/HomePage.css';
 
 function HomePage() {
@@ -17,6 +18,7 @@ function HomePage() {
   const [searchLocation, setSearchLocation] = useState('');
   const [showBookModal, setShowBookModal] = useState(false);
   const [showBookingsModal, setShowBookingsModal] = useState(false);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [selectedBikeId, setSelectedBikeId] = useState('');
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function HomePage() {
     try {
       const filters = {
         status: 'available',
-        ...(filterType && { bike_type: filterType }), // Changed from 'type' to 'bike_type'
+        ...(filterType && { bike_type: filterType }),
       };
       const data = await apiService.getPublicBikes(filters);
       setBikes(data.bikes || []);
@@ -40,7 +42,7 @@ function HomePage() {
     setLoading(false);
   };
 
-  const getTypeIcon = (bikeType) => { // Updated parameter name for clarity
+  const getTypeIcon = (bikeType) => {
     switch (bikeType) {
       case 'eBike':
         return '🚴';
@@ -66,6 +68,11 @@ function HomePage() {
       setSelectedBikeId(bikeId);
       setShowBookModal(true);
     }
+  };
+
+  const handleViewReviews = (bikeId) => {
+    setSelectedBikeId(bikeId);
+    setShowReviewsModal(true);
   };
 
   const filteredBikes = bikes.filter((bike) =>
@@ -139,19 +146,19 @@ function HomePage() {
                 onClick={() => setFilterType('eBike')}
                 className={`filter-button ${filterType === 'eBike' ? 'active' : ''}`}
               >
-                🚴 eBikes ({bikes.filter((b) => b.bike_type === 'eBike').length}) {/* Changed from b.type */}
+                🚴 eBikes ({bikes.filter((b) => b.bike_type === 'eBike').length})
               </button>
               <button
                 onClick={() => setFilterType('Gyroscooter')}
                 className={`filter-button ${filterType === 'Gyroscooter' ? 'active' : ''}`}
               >
-                🛴 Gyroscooters ({bikes.filter((b) => b.bike_type === 'Gyroscooter').length}) {/* Changed from b.type */}
+                🛴 Gyroscooters ({bikes.filter((b) => b.bike_type === 'Gyroscooter').length})
               </button>
               <button
                 onClick={() => setFilterType('Segway')}
                 className={`filter-button ${filterType === 'Segway' ? 'active' : ''}`}
               >
-                🛴 Segways ({bikes.filter((b) => b.bike_type === 'Segway').length}) {/* Changed from b.type */}
+                🛴 Segways ({bikes.filter((b) => b.bike_type === 'Segway').length})
               </button>
             </div>
             <div className="search-container">
@@ -170,7 +177,7 @@ function HomePage() {
             <div className="error-card">
               <p className="error-text">{error}</p>
             </div>
-            )}
+          )}
 
           {/* Loading State */}
           {loading ? (
@@ -194,9 +201,9 @@ function HomePage() {
                   <div className="bike-card-content">
                     <div className="bike-header">
                       <div className="bike-info">
-                        <span className="bike-icon">{getTypeIcon(bike.bike_type)}</span> {/* Changed from bike.type */}
+                        <span className="bike-icon">{getTypeIcon(bike.bike_type)}</span>
                         <div>
-                          <h3 className="bike-title">{bike.bike_type}</h3> {/* Changed from bike.type */}
+                          <h3 className="bike-title">{bike.bike_type}</h3>
                           <p className="bike-code">{bike.access_code}</p>
                         </div>
                       </div>
@@ -241,11 +248,20 @@ function HomePage() {
                       </div>
                     )}
 
+                    {/* Book Button */}
                     <button
                       onClick={() => handleBookNow(bike.bike_id)}
                       className="book-button"
                     >
                       {user ? 'Book Now' : 'Login to Book'}
+                    </button>
+
+                    {/* Review Button */}
+                    <button
+                      onClick={() => handleViewReviews(bike.bike_id)}
+                      className="book-button"
+                    >
+                      View Reviews
                     </button>
                   </div>
                 </div>
@@ -290,6 +306,9 @@ function HomePage() {
         )}
         {showBookingsModal && (
           <ViewBookingsModal onClose={() => setShowBookingsModal(false)} />
+        )}
+        {showReviewsModal && (
+          <ViewReviewsModal bikeId={selectedBikeId} onClose={() => setShowReviewsModal(false)} />
         )}
       </div>
     </>

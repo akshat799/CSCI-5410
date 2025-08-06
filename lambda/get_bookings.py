@@ -82,10 +82,10 @@ def lambda_handler(event, context):
                 bike_response = bikes_table.get_item(
                     Key={'bike_id': bike_id},
                     ProjectionExpression='#t',
-                    ExpressionAttributeNames={'#t': 'type'}
+                    ExpressionAttributeNames={'#t': 'bike_type'}
                 )
                 bike = bike_response.get('Item')
-                booking['bike_type'] = bike.get('type', 'Unknown') if bike else 'Unknown'
+                booking['bike_type'] = bike.get('bike_type', 'Unknown') if bike else 'Unknown'
 
         return {
             'statusCode': 200,

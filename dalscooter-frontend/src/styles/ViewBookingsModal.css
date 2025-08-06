@@ -56,11 +56,10 @@
 }
 
 .booking-item {
-  padding: 0.75rem;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--gray-200);
   font-size: var(--font-size-sm);
-  border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .booking-item:last-child {

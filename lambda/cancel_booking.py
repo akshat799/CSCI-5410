@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         user_groups = claims.get('cognito:groups', [])
         if isinstance(user_groups, str):
             user_groups = [user_groups] if user_groups else []
-        user_id = claims.get('sub')
+        user_id = claims.get('email')
 
         if 'RegisteredCustomer' not in user_groups:
             return {
@@ -26,8 +26,9 @@ def lambda_handler(event, context):
                 'body': json.dumps({'message': 'Access denied. Registered customers only.'})
             }
 
-        body = json.loads(event.get('body', '{}'))
-        booking_reference = body.get('booking_reference')
+        query_params = event.get('queryStringParameters') or {}
+        booking_reference = query_params.get('booking_reference')
+
 
         # Verify booking exists and belongs to user
         booking_response = bookings_table.get_item(Key={'booking_reference': booking_reference})

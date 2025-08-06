@@ -74,7 +74,7 @@ resource "aws_dynamodb_table" "bikes" {
   }
 
   attribute {
-    name = "type"
+    name = "bike_type"
     type = "S"
   }
 
@@ -85,7 +85,7 @@ resource "aws_dynamodb_table" "bikes" {
 
   global_secondary_index {
     name            = "TypeIndex"
-    hash_key        = "type"
+    hash_key        = "bike_type"
     projection_type = "ALL"
   }
 

@@ -86,7 +86,7 @@ export default function LoginPage() {
   const validateUserRole = async (email) => {
     try {
       const userData = user || JSON.parse(localStorage.getItem('user') || '{}');
-      console.log('Validating user role, user data:', userData);
+      console.log(`Validating user role for email: ${email}, user data:`, userData);
       if (userData.idToken) {
         const parts = userData.idToken.split('.');
         if (parts.length === 3) {

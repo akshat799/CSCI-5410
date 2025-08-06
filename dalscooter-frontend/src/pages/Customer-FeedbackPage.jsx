@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import FeedbackForm from "../components/FeedbackForm";
-import FeedbackList from "../components/FeedbackList";
-import SentimentDashboard from "../components/SentimentDashboard";
-import feedbackService from "../services/feedbackService";
+import { useAuth } from "../context/AuthContext.jsx";
+import FeedbackForm from "../components/FeedbackForm.jsx";
+import FeedbackList from "../components/FeedbackList.jsx";
+// import SentimentDashboard from "../components/SentimentDashboard.jsx";
+import feedbackService from "../services/feedbackService.js";
 import { MessageCircle, BarChart3, List, Plus, X } from "lucide-react";
 import "../styles/FeedbackPage.css";
 import Navbar from "../components/NavBar.jsx";
@@ -56,7 +56,6 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
 
   const tabs = [
     { id: "list", label: "All Feedback", icon: List },
-    { id: "analytics", label: "Sentiment Analytics", icon: BarChart3 },
     {
       id: "my-feedback",
       label: "My Feedback",
@@ -163,12 +162,6 @@ Confidence: ${(result.sentiment_analysis?.confidence * 100).toFixed(1)}%`);
           {activeTab === "list" && (
             <div>
               <FeedbackList showStats={true} />
-            </div>
-          )}
-
-          {activeTab === "analytics" && (
-            <div>
-              <SentimentDashboard />
             </div>
           )}
 

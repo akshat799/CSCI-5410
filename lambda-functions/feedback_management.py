@@ -244,7 +244,6 @@ def submit_feedback(feedback_data, claims):
         
         feedback_table.put_item(Item=feedback_item)
         
-        # Convert Decimal for JSON response
         response_feedback = json.loads(json.dumps(feedback_item, default=decimal_default))
         
         return create_response(201, {

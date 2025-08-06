@@ -263,7 +263,6 @@ resource "aws_lambda_permission" "book_slot_permission" {
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/POST/bookings"
 }
 
-
 resource "aws_lambda_permission" "cancel_booking_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"

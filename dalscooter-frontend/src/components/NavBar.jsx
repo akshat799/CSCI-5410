@@ -18,12 +18,6 @@ function Navbar() {
     return user.role === "FranchiseOperator" ? "/franchise-dashboard" : "/";
   };
 
-  const getRoleDisplay = () => {
-    if (!user) return "";
-    const currentPath = window.location.pathname;
-    return currentPath.includes("franchise") ? "Franchise" : "Customer";
-  };
-
   return (
     <nav className="nav-container">
       <div className="nav-brand">
@@ -39,11 +33,6 @@ function Navbar() {
         ) : (
           <>
             <Link to="/profile">Profile</Link>
-            {user && (
-              <span className="nav-role">
-                ({getRoleDisplay()})
-              </span>
-            )}
             <button onClick={handleLogout}>Logout</button>
           </>
         )}

@@ -838,3 +838,48 @@
   font-size: var(--font-size-base);
   color: var(--gray-400);
 }
+
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--white);
+  border: 1px solid var(--gray-200);
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.tab-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.tab-button.active {
+  background-color: var(--blue-600);
+  color: var(--white);
+  border-color: var(--blue-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-button.inactive:hover {
+  background-color: var(--gray-200);
+}

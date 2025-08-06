@@ -111,6 +111,13 @@ function HomePage() {
               ) : (
                 <>
                   <button
+                  onClick={() => navigate('/issues')}
+                  className="glass-button"
+                >
+                  Go to Issues Page
+                </button>
+
+                  <button
                     onClick={() => navigate('/Cfeedback')}
                     className="glass-button"
                   >
